@@ -25,3 +25,6 @@ frontend/dist/
 
 # Test output
 coverage/
+
+# Java bytecode
+*.class

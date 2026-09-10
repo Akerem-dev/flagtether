@@ -1,106 +1,87 @@
 package com.releasepilot;
 
-
 public class FeatureFlagEvaluation {
 
-    private final String flagName;
+  private final String flagName;
 
-    private final String environment;
+  private final String environment;
 
-    private final String userKey;
+  private final String userKey;
 
-    private final boolean enabled;
+  private final boolean enabled;
 
-    private final EvaluationReason reason;
+  private final EvaluationReason reason;
 
-    private final int rolloutPercentage;
+  private final int rolloutPercentage;
 
-    private final int bucket;
+  private final int bucket;
 
-    private final Long matchedRuleId;
+  private final Long matchedRuleId;
 
+  public FeatureFlagEvaluation(
+      String flagName,
+      String environment,
+      String userKey,
+      boolean enabled,
+      EvaluationReason reason,
+      int rolloutPercentage,
+      int bucket,
+      Long matchedRuleId) {
 
-    public FeatureFlagEvaluation(
-            String flagName,
-            String environment,
-            String userKey,
-            boolean enabled,
-            EvaluationReason reason,
-            int rolloutPercentage,
-            int bucket,
-            Long matchedRuleId
-    ) {
+    this.flagName = flagName;
 
-        this.flagName =
-                flagName;
+    this.environment = environment;
 
-        this.environment =
-                environment;
+    this.userKey = userKey;
 
-        this.userKey =
-                userKey;
+    this.enabled = enabled;
 
-        this.enabled =
-                enabled;
+    this.reason = reason;
 
-        this.reason =
-                reason;
+    this.rolloutPercentage = rolloutPercentage;
 
-        this.rolloutPercentage =
-                rolloutPercentage;
+    this.bucket = bucket;
 
-        this.bucket =
-                bucket;
+    this.matchedRuleId = matchedRuleId;
+  }
 
-        this.matchedRuleId =
-                matchedRuleId;
-    }
+  public String getFlagName() {
 
+    return flagName;
+  }
 
-    public String getFlagName() {
+  public String getEnvironment() {
 
-        return flagName;
-    }
+    return environment;
+  }
 
+  public String getUserKey() {
 
-    public String getEnvironment() {
+    return userKey;
+  }
 
-        return environment;
-    }
+  public boolean isEnabled() {
 
+    return enabled;
+  }
 
-    public String getUserKey() {
+  public EvaluationReason getReason() {
 
-        return userKey;
-    }
+    return reason;
+  }
 
+  public int getRolloutPercentage() {
 
-    public boolean isEnabled() {
+    return rolloutPercentage;
+  }
 
-        return enabled;
-    }
+  public int getBucket() {
 
+    return bucket;
+  }
 
-    public EvaluationReason getReason() {
+  public Long getMatchedRuleId() {
 
-        return reason;
-    }
-
-
-    public int getRolloutPercentage() {
-
-        return rolloutPercentage;
-    }
-
-
-    public int getBucket() {
-
-        return bucket;
-    }
-
-
-    public Long getMatchedRuleId() {
-
-        return matchedRuleId;
-    }
+    return matchedRuleId;
+  }
 }

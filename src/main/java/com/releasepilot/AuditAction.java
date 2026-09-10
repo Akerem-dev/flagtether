@@ -1,18 +1,17 @@
 package com.releasepilot;
 
 public enum AuditAction {
+  FLAG_CREATED,
 
-    FLAG_CREATED,
+  FLAG_ENABLED,
 
-    FLAG_ENABLED,
+  FLAG_DISABLED,
 
-    FLAG_DISABLED,
+  FLAG_ROLLOUT_UPDATED,
 
-    FLAG_ROLLOUT_UPDATED,
+  FLAG_DELETED,
 
-    FLAG_DELETED,
+  RULE_CREATED,
 
-    RULE_CREATED,
-
-    RULE_DELETED
+  RULE_DELETED
 }

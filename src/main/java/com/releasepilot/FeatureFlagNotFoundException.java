@@ -1,17 +1,12 @@
 package com.releasepilot;
-public class FeatureFlagNotFoundException
-        extends RuntimeException {
 
-    // Islem yapmak istedigimiz feature flag
-    // bulunamadiginda kullanilir.
+public class FeatureFlagNotFoundException extends RuntimeException {
 
-    public FeatureFlagNotFoundException(
-            String flagName
-    ) {
+  // Islem yapmak istedigimiz feature flag
+  // bulunamadiginda kullanilir.
 
-        super(
-                "Feature flag bulunamadi: "
-                        + flagName
-        );
-    }
+  public FeatureFlagNotFoundException(String flagName) {
+
+    super("Feature flag bulunamadi: " + flagName);
+  }
 }

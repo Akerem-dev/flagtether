@@ -1,17 +1,12 @@
 package com.releasepilot;
-public class FeatureFlagAlreadyExistsException
-        extends RuntimeException {
 
-    // Ayni isimde ikinci bir feature flag
-    // olusturulmaya calisildiginda kullanilir.
+public class FeatureFlagAlreadyExistsException extends RuntimeException {
 
-    public FeatureFlagAlreadyExistsException(
-            String flagName
-    ) {
+  // Ayni isimde ikinci bir feature flag
+  // olusturulmaya calisildiginda kullanilir.
 
-        super(
-                "Feature flag zaten mevcut: "
-                        + flagName
-        );
-    }
+  public FeatureFlagAlreadyExistsException(String flagName) {
+
+    super("Feature flag zaten mevcut: " + flagName);
+  }
 }

@@ -62,7 +62,7 @@ The shortest reproducible setup uses Docker.
 Clone the repository and enter the project directory:
 
 ```bash
-git clone <REPOSITORY_URL>
+git clone https://github.com/Akerem-dev/releasepilot.git
 cd releasepilot
 ```
 

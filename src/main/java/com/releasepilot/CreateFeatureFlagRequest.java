@@ -1,6 +1,5 @@
 package com.releasepilot;
 
-
 // =============================================================
 // CREATE FEATURE FLAG REQUEST DTO
 // =============================================================
@@ -23,92 +22,75 @@ package com.releasepilot;
 
 public class CreateFeatureFlagRequest {
 
-    // JSON'daki:
-    //
-    // "name"
-    //
-    // degeri burada tutulacak.
-    private String name;
+  // JSON'daki:
+  //
+  // "name"
+  //
+  // degeri burada tutulacak.
+  private String name;
 
+  // JSON'daki:
+  //
+  // "enabled"
+  //
+  // degeri burada tutulacak.
+  private boolean enabled;
 
-    // JSON'daki:
-    //
-    // "enabled"
-    //
-    // degeri burada tutulacak.
-    private boolean enabled;
+  // JSON'daki:
+  //
+  // "rolloutPercentage"
+  //
+  // degeri burada tutulacak.
+  private int rolloutPercentage;
 
+  // =========================================================
+  // BOS CONSTRUCTOR
+  // =========================================================
+  //
+  // JSON -> Java object donusumunu yapan sistemin
+  // object'i olusturabilmesi icin bos constructor
+  // bulunduruyoruz.
 
-    // JSON'daki:
-    //
-    // "rolloutPercentage"
-    //
-    // degeri burada tutulacak.
-    private int rolloutPercentage;
+  public CreateFeatureFlagRequest() {}
 
+  // =========================================================
+  // GETTERS
+  // =========================================================
 
-    // =========================================================
-    // BOS CONSTRUCTOR
-    // =========================================================
-    //
-    // JSON -> Java object donusumunu yapan sistemin
-    // object'i olusturabilmesi icin bos constructor
-    // bulunduruyoruz.
+  public String getName() {
 
-    public CreateFeatureFlagRequest() {
-    }
+    return name;
+  }
 
+  public boolean isEnabled() {
 
-    // =========================================================
-    // GETTERS
-    // =========================================================
+    return enabled;
+  }
 
-    public String getName() {
+  public int getRolloutPercentage() {
 
-        return name;
-    }
+    return rolloutPercentage;
+  }
 
+  // =========================================================
+  // SETTERS
+  // =========================================================
+  //
+  // JSON'dan okunan degerlerin object'in field'larina
+  // yerlestirilebilmesi icin setter kullaniyoruz.
 
-    public boolean isEnabled() {
+  public void setName(String name) {
 
-        return enabled;
-    }
+    this.name = name;
+  }
 
+  public void setEnabled(boolean enabled) {
 
-    public int getRolloutPercentage() {
+    this.enabled = enabled;
+  }
 
-        return rolloutPercentage;
-    }
+  public void setRolloutPercentage(int rolloutPercentage) {
 
-
-    // =========================================================
-    // SETTERS
-    // =========================================================
-    //
-    // JSON'dan okunan degerlerin object'in field'larina
-    // yerlestirilebilmesi icin setter kullaniyoruz.
-
-    public void setName(
-            String name
-    ) {
-
-        this.name = name;
-    }
-
-
-    public void setEnabled(
-            boolean enabled
-    ) {
-
-        this.enabled = enabled;
-    }
-
-
-    public void setRolloutPercentage(
-            int rolloutPercentage
-    ) {
-
-        this.rolloutPercentage =
-                rolloutPercentage;
-    }
+    this.rolloutPercentage = rolloutPercentage;
+  }
 }

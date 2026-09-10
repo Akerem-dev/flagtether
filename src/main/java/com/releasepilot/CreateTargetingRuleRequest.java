@@ -1,94 +1,66 @@
 package com.releasepilot;
 
-
 public class CreateTargetingRuleRequest {
 
-    private String attribute;
+  private String attribute;
 
-    private String operator;
+  private String operator;
 
-    private String comparisonValue;
+  private String comparisonValue;
 
-    private boolean serveEnabled;
+  private boolean serveEnabled;
 
-    private Integer priority;
+  private Integer priority;
 
+  public CreateTargetingRuleRequest() {}
 
-    public CreateTargetingRuleRequest() {
-    }
+  public String getAttribute() {
 
+    return attribute;
+  }
 
-    public String getAttribute() {
+  public void setAttribute(String attribute) {
 
-        return attribute;
-    }
+    this.attribute = attribute;
+  }
 
+  public String getOperator() {
 
-    public void setAttribute(
-            String attribute
-    ) {
+    return operator;
+  }
 
-        this.attribute =
-                attribute;
-    }
+  public void setOperator(String operator) {
 
+    this.operator = operator;
+  }
 
-    public String getOperator() {
+  public String getComparisonValue() {
 
-        return operator;
-    }
+    return comparisonValue;
+  }
 
+  public void setComparisonValue(String comparisonValue) {
 
-    public void setOperator(
-            String operator
-    ) {
+    this.comparisonValue = comparisonValue;
+  }
 
-        this.operator =
-                operator;
-    }
+  public boolean isServeEnabled() {
 
+    return serveEnabled;
+  }
 
-    public String getComparisonValue() {
+  public void setServeEnabled(boolean serveEnabled) {
 
-        return comparisonValue;
-    }
+    this.serveEnabled = serveEnabled;
+  }
 
+  public Integer getPriority() {
 
-    public void setComparisonValue(
-            String comparisonValue
-    ) {
+    return priority;
+  }
 
-        this.comparisonValue =
-                comparisonValue;
-    }
+  public void setPriority(Integer priority) {
 
-
-    public boolean isServeEnabled() {
-
-        return serveEnabled;
-    }
-
-
-    public void setServeEnabled(
-            boolean serveEnabled
-    ) {
-
-        this.serveEnabled =
-                serveEnabled;
-    }
-
-
-    public Integer getPriority() {
-
-        return priority;
-    }
-
-
-    public void setPriority(
-            Integer priority
-    ) {
-
-        this.priority =
-                priority;
-    }
+    this.priority = priority;
+  }
 }
