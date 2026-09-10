@@ -1,0 +1,43 @@
+name: Bug report
+description: Report reproducible incorrect behavior in ReleasePilot
+title: "[Bug] "
+labels:
+  - bug
+
+body:
+  - type: textarea
+    id: behavior
+    attributes:
+      label: What happened?
+      description: Describe the incorrect behavior.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Reproduction steps
+      placeholder: |
+        1. Start ReleasePilot
+        2. Send request
+        3. Observe the result
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs or API response
+      render: shell
+
+  - type: input
+    id: version
+    attributes:
+      label: Commit or version
