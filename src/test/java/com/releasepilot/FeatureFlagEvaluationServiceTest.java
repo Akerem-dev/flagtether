@@ -19,8 +19,7 @@ class FeatureFlagEvaluationServiceTest {
   void setUp() {
     featureFlagService = mock(FeatureFlagService.class);
     targetingRuleService = mock(TargetingRuleService.class);
-    evaluationService =
-        new FeatureFlagEvaluationService(featureFlagService, targetingRuleService);
+    evaluationService = new FeatureFlagEvaluationService(featureFlagService, targetingRuleService);
   }
 
   @Test
@@ -28,8 +27,7 @@ class FeatureFlagEvaluationServiceTest {
     FeatureFlag flag = new FeatureFlag("new_checkout", "prod", false, 100);
     when(featureFlagService.getFlagByName("new_checkout", "prod")).thenReturn(flag);
 
-    FeatureFlagEvaluation result =
-        evaluationService.evaluate("new_checkout", "prod", "user-123");
+    FeatureFlagEvaluation result = evaluationService.evaluate("new_checkout", "prod", "user-123");
 
     assertThat(result.isEnabled()).isFalse();
     assertThat(result.getReason()).isEqualTo(EvaluationReason.FLAG_DISABLED);
@@ -42,14 +40,7 @@ class FeatureFlagEvaluationServiceTest {
     FeatureFlag flag = new FeatureFlag("new_checkout", "prod", true, 0);
     TargetingRule rule =
         new TargetingRule(
-            42L,
-            "new_checkout",
-            "prod",
-            "country",
-            TargetingOperator.EQUALS,
-            "TR",
-            true,
-            10);
+            42L, "new_checkout", "prod", "country", TargetingOperator.EQUALS, "TR", true, 10);
 
     when(featureFlagService.getFlagByName("new_checkout", "prod")).thenReturn(flag);
     when(targetingRuleService.getRules("new_checkout", "prod")).thenReturn(List.of(rule));
@@ -69,8 +60,7 @@ class FeatureFlagEvaluationServiceTest {
     when(featureFlagService.getFlagByName("new_checkout", "prod")).thenReturn(flag);
     when(targetingRuleService.getRules("new_checkout", "prod")).thenReturn(List.of());
 
-    FeatureFlagEvaluation first =
-        evaluationService.evaluate("new_checkout", "prod", "stable-user");
+    FeatureFlagEvaluation first = evaluationService.evaluate("new_checkout", "prod", "stable-user");
     FeatureFlagEvaluation second =
         evaluationService.evaluate("new_checkout", "prod", "stable-user");
 

@@ -40,8 +40,7 @@ class ReleasePilotIntegrationTest {
 
   @Test
   void createsAndEvaluatesFlagAgainstRealPostgres() {
-    FeatureFlag created =
-        featureFlagService.createFlag("integration_checkout", "prod", true, 100);
+    FeatureFlag created = featureFlagService.createFlag("integration_checkout", "prod", true, 100);
 
     assertThat(created.getName()).isEqualTo("integration_checkout");
     assertThat(created.getEnvironment()).isEqualTo("prod");
