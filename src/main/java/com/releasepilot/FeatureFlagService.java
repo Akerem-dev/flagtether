@@ -59,25 +59,6 @@ public class FeatureFlagService {
     return repository.findAllByEnvironment(normalizeEnvironment(environment));
   }
 
-  public void printAllFlags() {
-
-    List<FeatureFlag> flags = getAllFlags();
-
-    if (flags.isEmpty()) {
-
-      System.out.println("Henuz feature flag yok.");
-
-      return;
-    }
-
-    for (FeatureFlag flag : flags) {
-
-      flag.printSummary();
-
-      System.out.println();
-    }
-  }
-
   public FeatureFlag findFlagByName(String name) {
 
     return repository.findByName(name);
