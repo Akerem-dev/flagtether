@@ -59,14 +59,7 @@ class FeatureFlagEvaluationServiceTest {
     FeatureFlag flag = new FeatureFlag("new_checkout", "prod", true, 0);
     TargetingRule rule =
         new TargetingRule(
-            42L,
-            "new_checkout",
-            "prod",
-            "userKey",
-            TargetingOperator.EQUALS,
-            "User123",
-            true,
-            10);
+            42L, "new_checkout", "prod", "userKey", TargetingOperator.EQUALS, "User123", true, 10);
 
     when(featureFlagService.getFlagByName("new_checkout", "prod")).thenReturn(flag);
     when(targetingRuleService.getRules("new_checkout", "prod")).thenReturn(List.of(rule));
@@ -84,7 +77,8 @@ class FeatureFlagEvaluationServiceTest {
     when(featureFlagService.getFlagByName("new_checkout", "prod")).thenReturn(flag);
     when(targetingRuleService.getRules("new_checkout", "prod")).thenReturn(List.of());
 
-    FeatureFlagEvaluation trimmed = evaluationService.evaluate("new_checkout", "prod", "stable-user");
+    FeatureFlagEvaluation trimmed =
+        evaluationService.evaluate("new_checkout", "prod", "stable-user");
     FeatureFlagEvaluation padded =
         evaluationService.evaluate("new_checkout", "prod", "  stable-user  ");
 
