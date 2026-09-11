@@ -19,11 +19,6 @@ public class FeatureFlagService {
   }
 
   @Transactional
-  public FeatureFlag createFlag(String name, boolean enabled, int rolloutPercentage) {
-    return createFlag(name, "dev", enabled, rolloutPercentage);
-  }
-
-  @Transactional
   public FeatureFlag createFlag(
       String name, String environment, boolean enabled, int rolloutPercentage) {
     String normalizedEnvironment = normalizeEnvironment(environment);
@@ -50,29 +45,12 @@ public class FeatureFlagService {
     return flag;
   }
 
-  public List<FeatureFlag> getAllFlags() {
-    return getAllFlags("dev");
-  }
-
   public List<FeatureFlag> getAllFlags(String environment) {
     return repository.findAllByEnvironment(normalizeEnvironment(environment));
   }
 
-  public FeatureFlag findFlagByName(String name) {
-    return repository.findByName(name);
-  }
-
-  public FeatureFlag getFlagByName(String name) {
-    return getFlagByName(name, "dev");
-  }
-
   public FeatureFlag getFlagByName(String name, String environment) {
     return getExistingFlagOrThrow(name, normalizeEnvironment(environment));
-  }
-
-  @Transactional
-  public FeatureFlag updateEnabled(String name, boolean enabled) {
-    return updateEnabled(name, "dev", enabled);
   }
 
   @Transactional
@@ -99,11 +77,6 @@ public class FeatureFlagService {
   }
 
   @Transactional
-  public FeatureFlag updateRollout(String name, int newPercentage) {
-    return updateRollout(name, "dev", newPercentage);
-  }
-
-  @Transactional
   public FeatureFlag updateRollout(String name, String environment, int newPercentage) {
     String normalizedEnvironment = normalizeEnvironment(environment);
     FeatureFlag flag = getExistingFlagOrThrow(name, normalizedEnvironment);
@@ -123,21 +96,6 @@ public class FeatureFlagService {
         "from=" + previousPercentage + ", to=" + flag.getRolloutPercentage());
 
     return flag;
-  }
-
-  @Transactional
-  public void enableFlag(String name) {
-    updateEnabled(name, true);
-  }
-
-  @Transactional
-  public void disableFlag(String name) {
-    updateEnabled(name, false);
-  }
-
-  @Transactional
-  public void deleteFlag(String name) {
-    deleteFlag(name, "dev");
   }
 
   @Transactional
