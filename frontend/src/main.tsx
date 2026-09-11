@@ -10,6 +10,7 @@ import "./ui-overview-polish.css";
 import "./ui-product-polish.css";
 import "./ui-final-polish.css";
 import "./ui-responsive-qa.css";
+import "./ui-ux-final.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
