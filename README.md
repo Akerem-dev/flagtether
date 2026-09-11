@@ -2,39 +2,47 @@
 
 ReleasePilot is a self-hosted feature-management platform for controlling how features are exposed across development, staging, and production environments.
 
-The repository contains a Spring Boot/PostgreSQL backend and a responsive React administration console branded **FlagTether**. The project explores the engineering behind feature-management systems: deterministic rollouts, user targeting, environment isolation, audit history, database migrations, API design, and operational tooling.
+The repository contains a Spring Boot/PostgreSQL backend plus **FlagTether**, a responsive React administration console. Together they demonstrate the core engineering behind a modern feature-management system: deterministic rollouts, targeting rules, environment isolation, audit history, API design, database migrations, operational tooling, and containerized deployment.
 
-## What is implemented
+## Product surfaces
+
+FlagTether provides a focused developer-tool UI for operating ReleasePilot:
+
+- feature-flag list with environment switching, filtering, sorting, and creation;
+- flag overview with state and rollout controls;
+- targeting-rule management with priority ordering;
+- user-context evaluation testing;
+- audit-log filtering and change history;
+- API Explorer with health visibility and Swagger access;
+- responsive desktop, tablet, and mobile layouts;
+- accessible loading, confirmation, toast, and error states.
+
+The frontend intentionally uses the **FlagTether** product name while the backend service, repository, Java packages, and API remain **ReleasePilot**.
+
+## Engineering highlights
 
 ### Backend
 
 - feature flag creation, lookup, update, and deletion;
 - independent `dev`, `staging`, and `prod` configuration;
-- deterministic percentage rollouts;
+- deterministic percentage rollouts using stable SHA-256 bucketing;
 - targeting rules with explicit priority;
 - targeting by user key, country, plan, and email;
-- evaluation reasons and stable SHA-256 bucketing;
+- evaluation reasons for explainable decisions;
 - audit history;
 - PostgreSQL persistence;
 - Flyway database migrations;
 - OpenAPI / Swagger documentation;
 - unit and PostgreSQL integration tests;
-- Docker-based local execution.
+- Docker-based execution.
 
-### FlagTether administration UI
+### Frontend
 
-The `frontend/` application is built with React, TypeScript, React Router, and Vite. It includes:
+The `frontend/` application is built with React, TypeScript, React Router, and Vite. It uses a restrained, information-dense developer-tool interface rather than dashboard-heavy presentation patterns.
 
-- feature-flag list and environment switching;
-- flag overview and rollout controls;
-- targeting-rule management;
-- user-context evaluation testing;
-- audit-log filtering;
-- API Explorer / health visibility;
-- responsive desktop, tablet, and mobile layouts;
-- frontend lint and production-build CI.
+Frontend validation includes ESLint plus a TypeScript/Vite production build in CI.
 
-## Quick start
+## Quick start for development
 
 ### 1. Clone the repository
 
@@ -43,7 +51,7 @@ git clone https://github.com/Akerem-dev/releasepilot.git
 cd releasepilot
 ```
 
-### 2. Start the backend with Docker
+### 2. Start PostgreSQL and the backend
 
 Requirements:
 
@@ -82,7 +90,7 @@ Swagger UI: http://localhost:8080/swagger-ui.html
 OpenAPI:    http://localhost:8080/v3/api-docs
 ```
 
-### 3. Start the FlagTether frontend
+### 3. Start FlagTether
 
 Requirements:
 
@@ -103,13 +111,39 @@ Open:
 http://localhost:5173
 ```
 
-During local development Vite proxies `/api` requests to the Spring Boot application on `http://localhost:8080`, so the browser does not need a separate backend CORS configuration.
+During local development Vite proxies `/api`, Swagger UI, and OpenAPI requests to the Spring Boot application on `http://localhost:8080`.
 
 For deployments where the frontend and backend use different origins, set:
 
 ```text
 VITE_API_BASE_URL=https://your-api.example.com
 ```
+
+## Production-like full stack
+
+A separate Compose file builds the React application into an Nginx image and keeps PostgreSQL and the Spring Boot API internal to the Docker network. Nginx serves the SPA and reverse-proxies `/api`, Swagger UI, and OpenAPI routes to ReleasePilot.
+
+Create `.env` as described above, then run:
+
+```bash
+docker compose -f compose.prod.yaml up --build -d
+```
+
+Open:
+
+```text
+FlagTether:  http://localhost:3000
+Swagger UI:  http://localhost:3000/swagger-ui.html
+API:         http://localhost:3000/api
+```
+
+Stop the stack with:
+
+```bash
+docker compose -f compose.prod.yaml down
+```
+
+This is a production-like container topology, not a complete internet-facing production deployment. TLS termination, authentication, authorization, secret management, backups, and external observability still need to be supplied by the hosting environment.
 
 ## First API example
 
@@ -223,30 +257,33 @@ For example, one flag can be 100% enabled in development, 50% in staging, and 10
 ## Architecture
 
 ```text
-React / FlagTether UI
-        |
-        v
-     REST API
-        |
-        v
-Spring MVC Controller
-        |
-        v
-Application Service
-        |
-   +----+----------------+
-   |                     |
-   v                     v
-Evaluation / Rules   Audit logging
-   |
-   v
-Repository
-   |
-   v
-Spring DataSource
-   |
-   v
-PostgreSQL
+Browser
+  |
+  v
+FlagTether / Nginx
+  |
+  +---- static React application
+  |
+  +---- /api, Swagger, OpenAPI
+             |
+             v
+       ReleasePilot API
+             |
+             v
+     Spring MVC Controller
+             |
+             v
+      Application Service
+         +---+-----------+
+         |               |
+         v               v
+ Evaluation / Rules   Audit logging
+         |
+         v
+      Repository
+         |
+         v
+     PostgreSQL
 ```
 
 Database schema changes are managed through Flyway. More detail, including design decisions and trade-offs, is in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
@@ -256,7 +293,10 @@ Database schema changes are managed through Flyway. More detail, including desig
 ```text
 releasepilot/
 ├── frontend/
+│   ├── public/
 │   ├── src/
+│   ├── Dockerfile
+│   ├── nginx.conf
 │   ├── package.json
 │   └── vite.config.ts
 ├── src/
@@ -267,6 +307,7 @@ releasepilot/
 ├── .github/workflows/
 ├── Dockerfile
 ├── compose.yaml
+├── compose.prod.yaml
 ├── pom.xml
 └── README.md
 ```
@@ -347,7 +388,8 @@ Audit history is intended for configuration traceability; it is not a complete s
 - Spring owns database connections through `DataSource`.
 - Schema evolution belongs to Flyway migrations.
 - Environment is part of a feature flag's identity.
-- Local frontend development uses a Vite API proxy rather than weakening backend CORS policy.
+- Local frontend development uses a Vite reverse proxy rather than weakening backend CORS policy.
+- The production-like stack uses same-origin Nginx proxying so the browser does not need to know the internal API hostname.
 
 ## Known limitations
 
@@ -358,7 +400,8 @@ Audit history is intended for configuration traceability; it is not a complete s
 - no SDK for application-side local evaluation;
 - no real-time streaming of flag changes;
 - targeting attributes are limited to a small fixed set;
-- audit records do not contain authenticated actor identities.
+- audit records do not contain authenticated actor identities;
+- the included Compose stack does not provide TLS, managed secrets, backups, or production observability.
 
 ## Contributing and security
 
@@ -368,4 +411,4 @@ Do not commit credentials, tokens, `.env` files, or production secrets. Security
 
 ## Status
 
-The feature-management backend and FlagTether administration frontend are implemented and continuously validated in CI. The next major quality milestone is browser-level end-to-end coverage, followed by authentication / authorization and production deployment hardening.
+The ReleasePilot backend and FlagTether administration frontend are implemented and continuously validated in CI. A production-like Docker topology is included for full-stack demonstration. The next major quality milestones are browser-level end-to-end coverage and authentication / authorization.
