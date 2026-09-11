@@ -31,6 +31,7 @@ public class TargetingRuleService {
       boolean serveEnabled,
       Integer priority) {
     FeatureFlag flag = featureFlagService.getFlagByName(flagName, environment);
+    String normalizedAttribute = normalizeAttribute(attribute);
     TargetingOperator parsedOperator = parseOperator(operator);
     int actualPriority = priority == null ? 100 : priority;
 
@@ -39,7 +40,7 @@ public class TargetingRuleService {
             0,
             flag.getName(),
             flag.getEnvironment(),
-            attribute,
+            normalizedAttribute,
             parsedOperator,
             comparisonValue,
             serveEnabled,
@@ -83,6 +84,21 @@ public class TargetingRuleService {
 
     auditLogService.record(
         AuditAction.RULE_DELETED, flag.getName(), flag.getEnvironment(), "ruleId=" + ruleId);
+  }
+
+  private String normalizeAttribute(String attribute) {
+    if (attribute == null || attribute.isBlank()) {
+      throw new IllegalArgumentException("Targeting attribute bos olamaz.");
+    }
+
+    String normalized = attribute.trim().toLowerCase(Locale.ROOT);
+
+    return switch (normalized) {
+      case "userkey", "country", "plan", "email" -> normalized;
+      default ->
+          throw new IllegalArgumentException(
+              "Attribute userKey, country, plan veya email olmalidir.");
+    };
   }
 
   private TargetingOperator parseOperator(String operator) {
