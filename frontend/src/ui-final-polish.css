@@ -1,0 +1,104 @@
+/* Final restrained polish for the remaining FlagTether product surfaces.
+   Goal: denser developer-tool UI, less card/chip/CTA styling, consistent hierarchy. */
+
+/* Targeting */
+.targeting-page .targeting-layout {
+  grid-template-columns: minmax(0, 1fr) minmax(330px, 370px);
+  gap: 24px;
+  padding-top: 30px;
+}
+.targeting-page .targeting-heading { align-items: end; }
+.targeting-page .targeting-heading .section-actions { gap: 8px; }
+.targeting-page .targeting-heading .section-actions .secondary-button { display: none; }
+.targeting-page .rules-shell { border-color: #d8dee6; }
+.targeting-page .rules-table .code-token {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #344054;
+  font-size: 11.5px;
+}
+.targeting-page .default-rollout-section { margin-top: 26px; }
+.targeting-page .default-rollout-box {
+  min-height: 54px;
+  margin-top: 10px;
+  padding: 0 4px;
+  border: 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+}
+.targeting-page .default-rollout-box svg { width: 17px; height: 17px; color: #667085; }
+.targeting-page .evaluation-panel {
+  padding: 16px;
+  border-color: #d8dee6;
+}
+.targeting-page .evaluation-panel h2 { margin-bottom: 2px; }
+.targeting-page .evaluation-hint { margin-top: 6px !important; }
+.targeting-page .evaluation-form .primary-button.full-width {
+  min-height: 34px;
+  margin-top: 4px;
+}
+.targeting-page .evaluation-result { margin-top: 12px; padding-top: 12px; }
+.targeting-page .match-box { padding: 9px 10px; }
+
+/* Audit */
+.audit-page .audit-toolbar { margin-top: 22px; }
+.audit-page .audit-table-shell { border-color: #d8dee6; }
+.audit-page .audit-group-row td { background: #f8fafc; }
+.audit-page .audit-event-cell strong { letter-spacing: -.05px; }
+.audit-page .audit-event-cell span {
+  max-width: 720px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: bottom;
+}
+.audit-page .environment-cell { gap: 7px; }
+.audit-page .actions-col .icon-button { opacity: .72; }
+.audit-page tr:hover .actions-col .icon-button { opacity: 1; }
+
+/* API */
+.api-page .api-layout {
+  grid-template-columns: minmax(280px, 320px) minmax(0, 1fr);
+  gap: 24px;
+}
+.api-page .endpoint-nav {
+  padding-right: 18px;
+  border-right-color: #e1e6ec;
+}
+.api-page .endpoint-item {
+  min-height: 46px;
+  padding: 6px 7px;
+}
+.api-page .endpoint-item.active {
+  background: #f4f7fb;
+  box-shadow: inset 2px 0 0 var(--blue);
+}
+.api-page .endpoint-item small { color: #667085; }
+.api-page .method-badge {
+  min-width: 43px;
+  height: 20px;
+  font-size: 9.5px;
+}
+.api-page .endpoint-detail-header { align-items: flex-start; }
+.api-page .endpoint-actions .secondary-button { min-height: 32px; }
+.api-page .request-response-grid { gap: 22px; }
+.api-page .code-panel {
+  border-color: #d8dee6;
+  background: #fbfcfd;
+}
+.api-page .request-url { border-color: #d8dee6; }
+.api-page .base-url-card { background: #fbfcfd; }
+
+@media (max-width: 1050px) {
+  .targeting-page .targeting-layout { grid-template-columns: minmax(0, 1fr) 330px; gap: 20px; }
+  .api-page .api-layout { grid-template-columns: 290px minmax(0, 1fr); gap: 20px; }
+}
+
+@media (max-width: 820px) {
+  .targeting-page .targeting-layout { grid-template-columns: 1fr; }
+  .targeting-page .targeting-heading .section-actions .secondary-button { display: inline-flex; }
+  .api-page .api-layout { grid-template-columns: 1fr; }
+}
