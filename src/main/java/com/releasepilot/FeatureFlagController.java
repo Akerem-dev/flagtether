@@ -1,5 +1,6 @@
 package com.releasepilot;
 
+import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -42,7 +43,8 @@ public class FeatureFlagController {
   }
 
   @PostMapping
-  public ResponseEntity<FeatureFlag> createFlag(@RequestBody CreateFeatureFlagRequest request) {
+  public ResponseEntity<FeatureFlag> createFlag(
+      @Valid @RequestBody CreateFeatureFlagRequest request) {
 
     FeatureFlag createdFlag =
         featureFlagService.createFlag(
@@ -53,14 +55,14 @@ public class FeatureFlagController {
 
   @PatchMapping("/{name}/enabled")
   public FeatureFlag updateEnabled(
-      @PathVariable String name, @RequestBody UpdateFeatureFlagEnabledRequest request) {
+      @PathVariable String name, @Valid @RequestBody UpdateFeatureFlagEnabledRequest request) {
 
     return featureFlagService.updateEnabled(name, request.isEnabled());
   }
 
   @PatchMapping("/{name}/rollout")
   public FeatureFlag updateRollout(
-      @PathVariable String name, @RequestBody UpdateFeatureFlagRolloutRequest request) {
+      @PathVariable String name, @Valid @RequestBody UpdateFeatureFlagRolloutRequest request) {
 
     return featureFlagService.updateRollout(name, request.getRolloutPercentage());
   }
