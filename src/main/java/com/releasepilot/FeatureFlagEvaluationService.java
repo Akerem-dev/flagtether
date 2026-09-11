@@ -22,11 +22,6 @@ public class FeatureFlagEvaluationService {
     this.targetingRuleService = targetingRuleService;
   }
 
-  public FeatureFlagEvaluation evaluate(String flagName, String userKey) {
-
-    return evaluate(flagName, "dev", userKey, null, null, null);
-  }
-
   public FeatureFlagEvaluation evaluate(String flagName, String environment, String userKey) {
 
     return evaluate(flagName, environment, userKey, null, null, null);
