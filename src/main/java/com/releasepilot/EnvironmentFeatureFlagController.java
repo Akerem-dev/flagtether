@@ -1,5 +1,6 @@
 package com.releasepilot;
 
+import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,39 +19,31 @@ import org.springframework.web.bind.annotation.RestController;
 public class EnvironmentFeatureFlagController {
 
   private final FeatureFlagService featureFlagService;
-
   private final FeatureFlagEvaluationService evaluationService;
-
   private final TargetingRuleService targetingRuleService;
 
   public EnvironmentFeatureFlagController(
       FeatureFlagService featureFlagService,
       FeatureFlagEvaluationService evaluationService,
       TargetingRuleService targetingRuleService) {
-
     this.featureFlagService = featureFlagService;
-
     this.evaluationService = evaluationService;
-
     this.targetingRuleService = targetingRuleService;
   }
 
   @GetMapping
   public List<FeatureFlag> getAllFlags(@PathVariable String environment) {
-
     return featureFlagService.getAllFlags(environment);
   }
 
   @GetMapping("/{name}")
   public FeatureFlag getFlag(@PathVariable String environment, @PathVariable String name) {
-
     return featureFlagService.getFlagByName(name, environment);
   }
 
   @PostMapping
   public ResponseEntity<FeatureFlag> createFlag(
-      @PathVariable String environment, @RequestBody CreateFeatureFlagRequest request) {
-
+      @PathVariable String environment, @Valid @RequestBody CreateFeatureFlagRequest request) {
     FeatureFlag createdFlag =
         featureFlagService.createFlag(
             request.getName(), environment, request.isEnabled(), request.getRolloutPercentage());
@@ -62,8 +55,7 @@ public class EnvironmentFeatureFlagController {
   public FeatureFlag updateEnabled(
       @PathVariable String environment,
       @PathVariable String name,
-      @RequestBody UpdateFeatureFlagEnabledRequest request) {
-
+      @Valid @RequestBody UpdateFeatureFlagEnabledRequest request) {
     return featureFlagService.updateEnabled(name, environment, request.isEnabled());
   }
 
@@ -71,17 +63,14 @@ public class EnvironmentFeatureFlagController {
   public FeatureFlag updateRollout(
       @PathVariable String environment,
       @PathVariable String name,
-      @RequestBody UpdateFeatureFlagRolloutRequest request) {
-
+      @Valid @RequestBody UpdateFeatureFlagRolloutRequest request) {
     return featureFlagService.updateRollout(name, environment, request.getRolloutPercentage());
   }
 
   @DeleteMapping("/{name}")
   public ResponseEntity<Void> deleteFlag(
       @PathVariable String environment, @PathVariable String name) {
-
     featureFlagService.deleteFlag(name, environment);
-
     return ResponseEntity.noContent().build();
   }
 
@@ -93,13 +82,11 @@ public class EnvironmentFeatureFlagController {
       @RequestParam(required = false) String country,
       @RequestParam(required = false) String plan,
       @RequestParam(required = false) String email) {
-
     return evaluationService.evaluate(name, environment, userKey, country, plan, email);
   }
 
   @GetMapping("/{name}/rules")
   public List<TargetingRule> getRules(@PathVariable String environment, @PathVariable String name) {
-
     return targetingRuleService.getRules(name, environment);
   }
 
@@ -107,8 +94,7 @@ public class EnvironmentFeatureFlagController {
   public ResponseEntity<TargetingRule> createRule(
       @PathVariable String environment,
       @PathVariable String name,
-      @RequestBody CreateTargetingRuleRequest request) {
-
+      @Valid @RequestBody CreateTargetingRuleRequest request) {
     TargetingRule createdRule =
         targetingRuleService.create(
             name,
@@ -125,9 +111,7 @@ public class EnvironmentFeatureFlagController {
   @DeleteMapping("/{name}/rules/{ruleId}")
   public ResponseEntity<Void> deleteRule(
       @PathVariable String environment, @PathVariable String name, @PathVariable long ruleId) {
-
     targetingRuleService.delete(ruleId, name, environment);
-
     return ResponseEntity.noContent().build();
   }
 }
