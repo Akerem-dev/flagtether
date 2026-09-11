@@ -2,8 +2,14 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { getAuditLog } from "../api";
 import { Icon } from "../components/Icon";
-import { ENVIRONMENT_LABELS, PageHeader } from "../components/PageChrome";
+import { PageHeader } from "../components/PageChrome";
 import type { AuditLogEntry, Environment } from "../types";
+
+const ENVIRONMENT_LABELS: Record<Environment, string> = {
+  dev: "Dev",
+  staging: "Staging",
+  prod: "Production",
+};
 
 function actionLabel(action: string) {
   return action
