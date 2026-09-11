@@ -191,34 +191,38 @@ export function FlagsPage({
       />
 
       <section className="toolbar flags-toolbar" aria-label="Feature flag controls">
-        <label className="search-control">
-          <Icon name="search" size={18} />
-          <span className="sr-only">Search flags</span>
-          <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search by name or key..." />
-        </label>
-        <SelectMenu
-          value={statusFilter}
-          onChange={(value) => setStatusFilter(value as StatusFilter)}
-          options={STATUS_OPTIONS}
-          ariaLabel="Filter by status"
-          className="toolbar-select"
-        />
-        <SelectMenu
-          value={sort}
-          onChange={(value) => setSort(value as SortValue)}
-          options={SORT_OPTIONS}
-          ariaLabel="Sort flags"
-          className="toolbar-sort-select"
-        />
-        <details className="columns-menu">
-          <summary className="secondary-button">Columns <Icon name="chevron-down" size={15} /></summary>
-          <div className="columns-popover">
-            <label><input type="checkbox" checked={showRules} onChange={(event) => setShowRules(event.target.checked)} /> Rules</label>
-            <label><input type="checkbox" checked={showUpdated} onChange={(event) => setShowUpdated(event.target.checked)} /> Updated</label>
+        <div className="toolbar-left">
+          <label className="search-control">
+            <Icon name="search" size={17} />
+            <span className="sr-only">Search flags</span>
+            <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search flags..." />
+          </label>
+          <div className="toolbar-filters">
+            <SelectMenu
+              value={statusFilter}
+              onChange={(value) => setStatusFilter(value as StatusFilter)}
+              options={STATUS_OPTIONS}
+              ariaLabel="Filter by status"
+              className="toolbar-select"
+            />
+            <SelectMenu
+              value={sort}
+              onChange={(value) => setSort(value as SortValue)}
+              options={SORT_OPTIONS}
+              ariaLabel="Sort flags"
+              className="toolbar-sort-select"
+            />
+            <details className="columns-menu">
+              <summary className="secondary-button">Columns <Icon name="chevron-down" size={14} /></summary>
+              <div className="columns-popover">
+                <label><input type="checkbox" checked={showRules} onChange={(event) => setShowRules(event.target.checked)} /> Rules</label>
+                <label><input type="checkbox" checked={showUpdated} onChange={(event) => setShowUpdated(event.target.checked)} /> Updated</label>
+              </div>
+            </details>
           </div>
-        </details>
+        </div>
         <button className="primary-button new-flag-button" type="button" onClick={() => setCreateOpen(true)}>
-          <Icon name="plus" size={17} /> New flag
+          <Icon name="plus" size={16} /> New flag
         </button>
       </section>
 
@@ -232,7 +236,7 @@ export function FlagsPage({
             <thead>
               <tr>
                 <th className="checkbox-col"><input type="checkbox" aria-label="Select all flags" disabled /></th>
-                <th>Name / key</th>
+                <th>Flag key</th>
                 <th>State</th>
                 <th>Rollout</th>
                 {showRules ? <th className="rules-col">Rules</th> : null}
@@ -248,7 +252,7 @@ export function FlagsPage({
               ) : filteredFlags.map((flag) => (
                 <tr key={flag.name} className="clickable-row" onClick={() => navigate(`/flags/${encodeURIComponent(flag.name)}`)}>
                   <td className="checkbox-col"><input type="checkbox" aria-label={`Select ${flag.name}`} onClick={(event) => event.stopPropagation()} /></td>
-                  <td className="flag-name-cell"><strong>{flag.name}</strong><code>{flag.name}</code></td>
+                  <td className="flag-name-cell"><code className="flag-key-primary">{flag.name}</code></td>
                   <td>
                     <button className="inline-state-button" type="button" disabled={busyName === flag.name} onClick={(event) => void toggleFlag(flag, event)}>
                       <StatusDot enabled={flag.enabled} /> {flag.enabled ? "On" : "Off"}
@@ -259,7 +263,7 @@ export function FlagsPage({
                   {showUpdated ? <td className="updated-col muted-cell">{formatRelativeDate(meta[flag.name]?.updatedAt)}</td> : null}
                   <td className="actions-col">
                     <details className="row-menu" onClick={(event) => event.stopPropagation()}>
-                      <summary aria-label={`Actions for ${flag.name}`}><Icon name="more-horizontal" size={18} /></summary>
+                      <summary aria-label={`Actions for ${flag.name}`}><Icon name="more-horizontal" size={17} /></summary>
                       <div className="row-menu-popover">
                         <button type="button" onClick={() => navigate(`/flags/${encodeURIComponent(flag.name)}`)}>View details</button>
                         <button className="danger-action" type="button" onClick={(event) => void removeFlag(flag, event)}>Delete</button>
@@ -276,12 +280,15 @@ export function FlagsPage({
       <Modal open={createOpen} title="New feature flag" description={`Create a flag in ${environment}.`} onClose={() => setCreateOpen(false)}>
         <form className="form-stack" onSubmit={handleCreate}>
           <label className="field-label">
-            Name / key
-            <input autoFocus value={name} onChange={(event) => setName(event.target.value)} placeholder="Enter flag name" required />
-            <small className="field-caption">Use a stable key such as lowercase words separated by hyphens.</small>
+            Flag key
+            <input autoFocus value={name} onChange={(event) => setName(event.target.value)} placeholder="Enter flag key" required />
+            <small className="field-caption">Use lowercase words separated by hyphens, for example <code>new-checkout</code>.</small>
           </label>
           <RolloutControl value={rollout} onChange={setRollout} label="Initial rollout" />
-          <label className="switch-row"><span><strong>Enable immediately</strong><small>Serve this flag as soon as it is created.</small></span><input type="checkbox" checked={enabled} onChange={(event) => setEnabled(event.target.checked)} /></label>
+          <label className="checkbox-setting">
+            <input type="checkbox" checked={enabled} onChange={(event) => setEnabled(event.target.checked)} />
+            <span><strong>Start enabled</strong><small>Serve this flag as soon as it is created.</small></span>
+          </label>
           <div className="dialog-actions"><button type="button" className="secondary-button" onClick={() => setCreateOpen(false)}>Cancel</button><button type="submit" className="primary-button" disabled={creating}>{creating ? "Creating…" : "Create flag"}</button></div>
         </form>
       </Modal>

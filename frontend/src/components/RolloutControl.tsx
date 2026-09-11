@@ -1,6 +1,6 @@
 import type { CSSProperties } from "react";
 
-const PRESETS = [0, 10, 25, 50, 100];
+const PRESETS = [0, 25, 50, 100];
 
 function clampRollout(value: number) {
   if (Number.isNaN(value)) return 0;
@@ -53,7 +53,7 @@ export function RolloutControl({
           onChange={(event) => onChange(Number(event.target.value))}
           aria-label={`${label} percentage`}
         />
-        <div className="rollout-scale" aria-hidden="true"><span>0%</span><span>100%</span></div>
+        <div className="rollout-scale" aria-hidden="true"><span>0</span><span>100</span></div>
       </div>
 
       <div className="rollout-presets" aria-label="Rollout presets">
