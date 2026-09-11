@@ -1,70 +1,54 @@
 # ReleasePilot
 
-ReleasePilot is a self-hosted feature flag backend for controlling how features are exposed across development, staging, and production environments.
+ReleasePilot is a self-hosted feature-management platform for controlling how features are exposed across development, staging, and production environments.
 
-It was built to explore the engineering behind feature-management systems: deterministic rollouts, user targeting, environment isolation, audit history, database migrations, and API-level testing.
+The repository contains a Spring Boot/PostgreSQL backend and a responsive React administration console branded **FlagTether**. The project explores the engineering behind feature-management systems: deterministic rollouts, user targeting, environment isolation, audit history, database migrations, API design, and operational tooling.
 
-The repository currently contains the backend platform. A web administration interface is not part of the current version yet.
+## What is implemented
 
-## Why this exists
+### Backend
 
-Shipping a feature often needs more control than a boolean stored in application code.
-
-A team may want to:
-
-- enable a feature in development but keep it disabled in production;
-- expose a release to only a percentage of users;
-- target users by country, plan, email, or user key;
-- preserve the same rollout decision for the same user;
-- understand why an evaluation returned `true` or `false`;
-- keep a history of configuration changes.
-
-ReleasePilot implements those behaviors as a small feature-management service rather than hiding them behind a third-party SDK.
-
-### Current scope
-
-The current backend supports:
-
-- feature flag creation, updates, lookup, and deletion;
-- `dev`, `staging`, and `prod` configurations;
+- feature flag creation, lookup, update, and deletion;
+- independent `dev`, `staging`, and `prod` configuration;
 - deterministic percentage rollouts;
 - targeting rules with explicit priority;
 - targeting by user key, country, plan, and email;
+- evaluation reasons and stable SHA-256 bucketing;
 - audit history;
-- REST API error responses;
 - PostgreSQL persistence;
-- versioned Flyway migrations;
-- OpenAPI documentation;
+- Flyway database migrations;
+- OpenAPI / Swagger documentation;
 - unit and PostgreSQL integration tests;
 - Docker-based local execution.
 
-### Non-goals of the current version
+### FlagTether administration UI
 
-The current version is not intended to be:
+The `frontend/` application is built with React, TypeScript, React Router, and Vite. It includes:
 
-- a multi-tenant SaaS platform;
-- an authentication or identity provider;
-- a replacement for commercial feature-management products;
-- a distributed low-latency edge evaluation system;
-- a complete admin UI.
-
-Those areas are intentionally outside the current backend scope.
+- feature-flag list and environment switching;
+- flag overview and rollout controls;
+- targeting-rule management;
+- user-context evaluation testing;
+- audit-log filtering;
+- API Explorer / health visibility;
+- responsive desktop, tablet, and mobile layouts;
+- frontend lint and production-build CI.
 
 ## Quick start
 
-The shortest reproducible setup uses Docker.
-
-### Requirements
-
-- Docker
-- Docker Compose
-
-Clone the repository and enter the project directory:
+### 1. Clone the repository
 
 ```bash
 git clone https://github.com/Akerem-dev/releasepilot.git
 cd releasepilot
 ```
+
+### 2. Start the backend with Docker
+
+Requirements:
+
+- Docker
+- Docker Compose
 
 Create the local environment file:
 
@@ -78,45 +62,58 @@ On Windows PowerShell:
 Copy-Item .env.example .env
 ```
 
-Set a local PostgreSQL password inside `.env`:
+Set a local PostgreSQL password in `.env`:
 
 ```text
 POSTGRES_PASSWORD=change-this-password
 ```
 
-Start the application:
+Start the backend and database:
 
 ```bash
 docker compose up --build
 ```
 
-When startup completes, open:
+Backend endpoints are then available at:
 
 ```text
-http://localhost:8080/swagger-ui.html
+API:        http://localhost:8080
+Swagger UI: http://localhost:8080/swagger-ui.html
+OpenAPI:    http://localhost:8080/v3/api-docs
 ```
 
-The OpenAPI document is available at:
+### 3. Start the FlagTether frontend
+
+Requirements:
+
+- Node.js 22+
+- npm
+
+Open a second terminal:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Open:
 
 ```text
-http://localhost:8080/v3/api-docs
+http://localhost:5173
 ```
 
-Stop the stack:
+During local development Vite proxies `/api` requests to the Spring Boot application on `http://localhost:8080`, so the browser does not need a separate backend CORS configuration.
 
-```bash
-docker compose down
+For deployments where the frontend and backend use different origins, set:
+
+```text
+VITE_API_BASE_URL=https://your-api.example.com
 ```
 
-Remove the local PostgreSQL volume as well:
+## First API example
 
-```bash
-docker compose down -v
-```
-
-## First working example
-
-Create a feature flag in the production environment:
+Create a feature flag in production:
 
 ```http
 POST /api/environments/prod/flags
@@ -135,9 +132,7 @@ Evaluate it for a user:
 GET /api/environments/prod/flags/new_checkout/evaluate?userKey=user-123
 ```
 
-An evaluation returns both the decision and the reason used to reach it.
-
-Example:
+Example response:
 
 ```json
 {
@@ -155,8 +150,6 @@ Example:
 The same environment, flag name, and user key produce the same rollout bucket.
 
 ## Evaluation model
-
-ReleasePilot evaluates a flag in this order:
 
 ```text
 Request
@@ -184,19 +177,17 @@ SHA-256 deterministic bucket
 enabled / disabled
 ```
 
-Random numbers are intentionally not used for percentage rollouts.
-
-The bucket input contains:
+Random numbers are intentionally not used for percentage rollouts. The bucket input includes:
 
 ```text
 environment + flagName + userKey
 ```
 
-This prevents a user from randomly moving in and out of a rollout between repeated requests.
+This keeps rollout decisions stable across repeated requests.
 
 ## Targeting rules
 
-Rules may target:
+Supported attributes:
 
 ```text
 userKey
@@ -205,7 +196,7 @@ plan
 email
 ```
 
-Supported operators are:
+Supported operators:
 
 ```text
 EQUALS
@@ -215,25 +206,7 @@ STARTS_WITH
 ENDS_WITH
 ```
 
-Rules are evaluated in ascending priority order.
-
-For example:
-
-```text
-priority = 5
-plan EQUALS free
-serveEnabled = false
-```
-
-is evaluated before:
-
-```text
-priority = 10
-country EQUALS TR
-serveEnabled = true
-```
-
-If no rule matches, evaluation falls back to the percentage rollout.
+Rules are evaluated in ascending priority order. If no rule matches, evaluation falls back to percentage rollout.
 
 ## Environments
 
@@ -245,142 +218,93 @@ staging
 prod
 ```
 
-For example, the same flag may be configured as:
-
-```text
-new_checkout
-
-dev
-enabled = true
-rollout = 100
-
-staging
-enabled = true
-rollout = 50
-
-prod
-enabled = true
-rollout = 10
-```
-
-The uniqueness boundary in PostgreSQL is therefore the combination of flag name and environment rather than flag name alone.
+For example, one flag can be 100% enabled in development, 50% in staging, and 10% in production. The PostgreSQL uniqueness boundary is therefore the combination of flag name and environment rather than flag name alone.
 
 ## Architecture
 
-The backend follows a Controller → Service → Repository flow.
-
 ```text
-HTTP Client
-    |
-    v
+React / FlagTether UI
+        |
+        v
+     REST API
+        |
+        v
 Spring MVC Controller
-    |
-    v
+        |
+        v
 Application Service
-    |
-    +-------------------------+
-    |                         |
-    v                         v
-Evaluation / Rules        Audit logging
-    |
-    v
+        |
+   +----+----------------+
+   |                     |
+   v                     v
+Evaluation / Rules   Audit logging
+   |
+   v
 Repository
-    |
-    v
+   |
+   v
 Spring DataSource
-    |
-    v
+   |
+   v
 PostgreSQL
 ```
 
-Database schema changes are managed separately through Flyway.
-
-More detail, including design decisions and trade-offs, is in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+Database schema changes are managed through Flyway. More detail, including design decisions and trade-offs, is in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## Repository layout
 
 ```text
 releasepilot/
+├── frontend/
+│   ├── src/
+│   ├── package.json
+│   └── vite.config.ts
 ├── src/
 │   ├── main/
 │   │   ├── java/com/releasepilot/
-│   │   └── resources/
-│   │       └── db/migration/
-│   └── test/
-│       └── java/com/releasepilot/
-├── .github/
-│   └── workflows/
+│   │   └── resources/db/migration/
+│   └── test/java/com/releasepilot/
+├── .github/workflows/
 ├── Dockerfile
 ├── compose.yaml
 ├── pom.xml
 └── README.md
 ```
 
-`src/main/java/com/releasepilot` contains the HTTP, application, evaluation, persistence, and configuration code.
+## Testing and CI
 
-`src/main/resources/db/migration` is the authoritative database migration history.
-
-`src/test/java/com/releasepilot` contains unit and integration tests.
-
-## Database migrations
-
-Flyway owns schema evolution.
-
-Migration files currently live at:
-
-```text
-src/main/resources/db/migration/
-```
-
-Current migrations:
-
-```text
-V1__initial_schema.sql
-V2__schema_integrity.sql
-```
-
-Existing migrations should not be edited after they have been applied. New schema changes should be introduced as a new migration version.
-
-## Testing
-
-Run all tests:
-
-```bash
-mvn clean test
-```
-
-Run the complete Maven verification lifecycle:
+Backend verification:
 
 ```bash
 mvn clean verify
 ```
 
-The test suite currently covers domain validation, evaluation behavior, stable percentage bucketing, targeting behavior, and an integration flow against a real PostgreSQL instance started by Testcontainers.
+Frontend validation:
 
-The integration tests do not replace PostgreSQL with an in-memory database.
+```bash
+cd frontend
+npm install
+npm run lint
+npm run build
+```
 
-### What is not currently covered
+GitHub Actions currently verifies:
 
-The current backend test suite does not claim coverage for:
+- Java 21 / Maven backend build and tests;
+- frontend ESLint and TypeScript/Vite production build;
+- CodeQL security analysis.
 
-- browser-level E2E flows;
-- a web administration UI;
-- production load or stress testing;
-- multi-node consistency;
-- authentication and authorization;
-- every security threat model.
+The backend integration tests run against PostgreSQL through Testcontainers rather than substituting an in-memory database.
 
-Those are outside the current implemented scope.
+Browser-level end-to-end tests and production load testing are not implemented yet.
 
-## Running without Docker
+## Running the backend without Docker
 
 Requirements:
 
 - Java 21
 - Maven
 - PostgreSQL
-
-The application database and migration user passwords are provided through environment variables.
 
 PowerShell example:
 
@@ -393,23 +317,7 @@ mvn spring-boot:run
 
 Database credentials are intentionally not stored in the repository.
 
-## API documentation
-
-With ReleasePilot running:
-
-```text
-Swagger UI
-http://localhost:8080/swagger-ui.html
-
-OpenAPI
-http://localhost:8080/v3/api-docs
-```
-
-Swagger is useful for manually exercising the REST endpoints during development.
-
 ## Audit history
-
-Configuration changes are recorded in PostgreSQL.
 
 Current audit actions include:
 
@@ -423,54 +331,41 @@ RULE_CREATED
 RULE_DELETED
 ```
 
-Recent entries can be retrieved from:
+Recent events:
 
 ```http
 GET /api/audit?limit=50
 ```
 
-Audit history is currently intended for configuration traceability, not as a complete security event log.
+Audit history is intended for configuration traceability; it is not a complete security event log.
 
 ## Design decisions
 
-A few choices in this repository are intentional:
-
 - Rollout assignment uses deterministic hashing rather than random evaluation.
-- Integration tests use PostgreSQL through Testcontainers instead of substituting H2.
+- Integration tests use PostgreSQL through Testcontainers instead of H2.
 - SQL remains explicit in repositories rather than introducing an ORM at this stage.
-- Spring owns database connections through `DataSource`; repositories do not manage credentials directly.
-- Schema evolution belongs to Flyway migrations rather than startup-time table creation.
-- Environment is part of a feature flag's identity because release configuration differs between `dev`, `staging`, and `prod`.
-
-The longer rationale is documented in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+- Spring owns database connections through `DataSource`.
+- Schema evolution belongs to Flyway migrations.
+- Environment is part of a feature flag's identity.
+- Local frontend development uses a Vite API proxy rather than weakening backend CORS policy.
 
 ## Known limitations
 
-ReleasePilot currently has several deliberate limitations:
-
 - no authentication or role-based access control;
 - no hosted public demo yet;
-- no React administration interface yet;
+- no browser-level E2E suite yet;
 - no distributed cache;
 - no SDK for application-side local evaluation;
 - no real-time streaming of flag changes;
-- targeting attributes are currently limited to a small fixed set;
-- audit records do not yet contain authenticated actor identities.
+- targeting attributes are limited to a small fixed set;
+- audit records do not contain authenticated actor identities.
 
-These limitations are documented rather than hidden because they define the actual boundary of the current version.
+## Contributing and security
 
-## Contributing
+Development expectations are documented in [CONTRIBUTING.md](CONTRIBUTING.md).
 
-Development and pull-request expectations are documented in [CONTRIBUTING.md](CONTRIBUTING.md).
-
-## Security
-
-Do not commit credentials, tokens, `.env` files, or production secrets.
-
-Security reporting instructions are documented in [SECURITY.md](SECURITY.md).
+Do not commit credentials, tokens, `.env` files, or production secrets. Security reporting instructions are documented in [SECURITY.md](SECURITY.md).
 
 ## Status
 
-The backend feature-management engine is implemented and tested.
-
-The next product milestone is the administration frontend and end-to-end browser coverage.
+The feature-management backend and FlagTether administration frontend are implemented and continuously validated in CI. The next major quality milestone is browser-level end-to-end coverage, followed by authentication / authorization and production deployment hardening.
