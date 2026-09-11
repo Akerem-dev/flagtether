@@ -1,17 +1,19 @@
 package com.releasepilot;
 
+import jakarta.validation.constraints.NotNull;
+
 public class UpdateFeatureFlagEnabledRequest {
 
-  private boolean enabled;
+  @NotNull(message = "is required")
+  private Boolean enabled;
 
   public UpdateFeatureFlagEnabledRequest() {}
 
-  public boolean isEnabled() {
+  public Boolean isEnabled() {
     return enabled;
   }
 
-  public void setEnabled(boolean enabled) {
-
+  public void setEnabled(Boolean enabled) {
     this.enabled = enabled;
   }
 }
