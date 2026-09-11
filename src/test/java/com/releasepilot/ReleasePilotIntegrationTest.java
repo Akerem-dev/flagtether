@@ -1,10 +1,12 @@
 package com.releasepilot;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -38,6 +40,8 @@ class ReleasePilotIntegrationTest {
 
   @Autowired private AuditLogService auditLogService;
 
+  @Autowired private JdbcTemplate jdbcTemplate;
+
   @Test
   void createsAndEvaluatesFlagAgainstRealPostgres() {
     FeatureFlag created = featureFlagService.createFlag("integration_checkout", "prod", true, 100);
@@ -58,5 +62,56 @@ class ReleasePilotIntegrationTest {
               assertThat(entry.getFlagName()).isEqualTo("integration_checkout");
               assertThat(entry.getEnvironment()).isEqualTo("prod");
             });
+  }
+
+  @Test
+  void rollsBackFlagCreationWhenAuditInsertFails() {
+    String flagName = "rollback_checkout";
+
+    jdbcTemplate.update(
+        "DELETE FROM feature_flags WHERE name = ? AND environment = ?", flagName, "prod");
+    jdbcTemplate.execute(
+        """
+        CREATE OR REPLACE FUNCTION fail_transaction_test_audit_insert()
+        RETURNS trigger AS $$
+        BEGIN
+          IF NEW.flag_name = 'rollback_checkout' THEN
+            RAISE EXCEPTION 'forced audit failure for transaction test';
+          END IF;
+          RETURN NEW;
+        END;
+        $$ LANGUAGE plpgsql
+        """);
+    jdbcTemplate.execute(
+        """
+        CREATE TRIGGER fail_transaction_test_audit_insert
+        BEFORE INSERT ON audit_log
+        FOR EACH ROW
+        EXECUTE FUNCTION fail_transaction_test_audit_insert()
+        """);
+
+    try {
+      assertThatThrownBy(() -> featureFlagService.createFlag(flagName, "prod", true, 50))
+          .isInstanceOf(RuntimeException.class);
+    } finally {
+      jdbcTemplate.execute("DROP TRIGGER IF EXISTS fail_transaction_test_audit_insert ON audit_log");
+      jdbcTemplate.execute("DROP FUNCTION IF EXISTS fail_transaction_test_audit_insert()");
+    }
+
+    Integer flagCount =
+        jdbcTemplate.queryForObject(
+            "SELECT COUNT(*) FROM feature_flags WHERE name = ? AND environment = ?",
+            Integer.class,
+            flagName,
+            "prod");
+    Integer auditCount =
+        jdbcTemplate.queryForObject(
+            "SELECT COUNT(*) FROM audit_log WHERE flag_name = ? AND environment = ?",
+            Integer.class,
+            flagName,
+            "prod");
+
+    assertThat(flagCount).isZero();
+    assertThat(auditCount).isZero();
   }
 }
