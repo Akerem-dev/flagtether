@@ -11,6 +11,8 @@ import {
 import { Icon } from "../components/Icon";
 import { Modal } from "../components/Modal";
 import { PageHeader, StatusDot } from "../components/PageChrome";
+import { RolloutControl } from "../components/RolloutControl";
+import { SelectMenu, type SelectMenuOption } from "../components/SelectMenu";
 import type { AuditLogEntry, Environment, FeatureFlag } from "../types";
 
 type StatusFilter = "all" | "on" | "off";
@@ -20,6 +22,19 @@ type FlagMeta = {
   ruleCount: number;
   updatedAt?: string;
 };
+
+const STATUS_OPTIONS: SelectMenuOption[] = [
+  { value: "all", label: "All states" },
+  { value: "on", label: "On" },
+  { value: "off", label: "Off" },
+];
+
+const SORT_OPTIONS: SelectMenuOption[] = [
+  { value: "name", label: "Sort: Name" },
+  { value: "state", label: "Sort: State" },
+  { value: "rollout", label: "Sort: Rollout" },
+  { value: "updated", label: "Sort: Updated" },
+];
 
 function formatRelativeDate(value?: string) {
   if (!value) return "—";
@@ -181,17 +196,20 @@ export function FlagsPage({
           <span className="sr-only">Search flags</span>
           <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search by name or key..." />
         </label>
-        <select className="control-select" value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as StatusFilter)} aria-label="Filter by status">
-          <option value="all">Status</option>
-          <option value="on">On</option>
-          <option value="off">Off</option>
-        </select>
-        <select className="control-select" value={sort} onChange={(event) => setSort(event.target.value as SortValue)} aria-label="Sort flags">
-          <option value="name">Sort: Name</option>
-          <option value="state">Sort: State</option>
-          <option value="rollout">Sort: Rollout</option>
-          <option value="updated">Sort: Updated</option>
-        </select>
+        <SelectMenu
+          value={statusFilter}
+          onChange={(value) => setStatusFilter(value as StatusFilter)}
+          options={STATUS_OPTIONS}
+          ariaLabel="Filter by status"
+          className="toolbar-select"
+        />
+        <SelectMenu
+          value={sort}
+          onChange={(value) => setSort(value as SortValue)}
+          options={SORT_OPTIONS}
+          ariaLabel="Sort flags"
+          className="toolbar-sort-select"
+        />
         <details className="columns-menu">
           <summary className="secondary-button">Columns <Icon name="chevron-down" size={15} /></summary>
           <div className="columns-popover">
@@ -257,8 +275,12 @@ export function FlagsPage({
 
       <Modal open={createOpen} title="New feature flag" description={`Create a flag in ${environment}.`} onClose={() => setCreateOpen(false)}>
         <form className="form-stack" onSubmit={handleCreate}>
-          <label className="field-label">Name / key<input autoFocus value={name} onChange={(event) => setName(event.target.value)} placeholder="checkout-v2" required /></label>
-          <label className="field-label">Initial rollout<div className="range-row"><input type="range" min={0} max={100} value={rollout} onChange={(event) => setRollout(Number(event.target.value))} /><output>{rollout}%</output></div></label>
+          <label className="field-label">
+            Name / key
+            <input autoFocus value={name} onChange={(event) => setName(event.target.value)} placeholder="Enter flag name" required />
+            <small className="field-caption">Use a stable key such as lowercase words separated by hyphens.</small>
+          </label>
+          <RolloutControl value={rollout} onChange={setRollout} label="Initial rollout" />
           <label className="switch-row"><span><strong>Enable immediately</strong><small>Serve this flag as soon as it is created.</small></span><input type="checkbox" checked={enabled} onChange={(event) => setEnabled(event.target.checked)} /></label>
           <div className="dialog-actions"><button type="button" className="secondary-button" onClick={() => setCreateOpen(false)}>Cancel</button><button type="submit" className="primary-button" disabled={creating}>{creating ? "Creating…" : "Create flag"}</button></div>
         </form>
