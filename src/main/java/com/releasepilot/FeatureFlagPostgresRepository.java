@@ -16,10 +16,6 @@ public class FeatureFlagPostgresRepository {
     this.jdbcTemplate = new JdbcTemplate(dataSource);
   }
 
-  public List<FeatureFlag> findAll() {
-    return findAllByEnvironment("dev");
-  }
-
   public List<FeatureFlag> findAllByEnvironment(String environment) {
     String sql =
         "SELECT name, environment, enabled, rollout_percentage "
@@ -28,10 +24,6 @@ public class FeatureFlagPostgresRepository {
             + "ORDER BY id";
 
     return jdbcTemplate.query(sql, this::mapRowToFeatureFlag, environment);
-  }
-
-  public FeatureFlag findByName(String name) {
-    return findByNameAndEnvironment(name, "dev");
   }
 
   public FeatureFlag findByNameAndEnvironment(String name, String environment) {
@@ -63,19 +55,11 @@ public class FeatureFlagPostgresRepository {
     }
   }
 
-  public boolean updateEnabled(String name, boolean enabled) {
-    return updateEnabled(name, "dev", enabled);
-  }
-
   public boolean updateEnabled(String name, String environment, boolean enabled) {
     String sql =
         "UPDATE feature_flags " + "SET enabled = ? " + "WHERE name = ? AND environment = ?";
 
     return jdbcTemplate.update(sql, enabled, name, environment) == 1;
-  }
-
-  public boolean updateRollout(String name, int rolloutPercentage) {
-    return updateRollout(name, "dev", rolloutPercentage);
   }
 
   public boolean updateRollout(String name, String environment, int rolloutPercentage) {
@@ -85,10 +69,6 @@ public class FeatureFlagPostgresRepository {
             + "WHERE name = ? AND environment = ?";
 
     return jdbcTemplate.update(sql, rolloutPercentage, name, environment) == 1;
-  }
-
-  public boolean deleteByName(String name) {
-    return deleteByName(name, "dev");
   }
 
   public boolean deleteByName(String name, String environment) {
