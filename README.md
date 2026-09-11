@@ -26,11 +26,11 @@ The frontend intentionally uses the **FlagTether** product name while the backen
 - feature flag creation, lookup, update, and deletion;
 - independent `dev`, `staging`, and `prod` configuration;
 - deterministic percentage rollouts using stable SHA-256 bucketing;
-- targeting rules with explicit priority;
+- targeting rules with priority ordering and a default priority of `100` when omitted;
 - targeting by user key, country, plan, and email;
 - evaluation reasons for explainable decisions;
 - audit history;
-- PostgreSQL persistence;
+- PostgreSQL persistence with database-level domain constraints;
 - Flyway database migrations;
 - OpenAPI / Swagger documentation;
 - unit and PostgreSQL integration tests;
@@ -240,7 +240,7 @@ STARTS_WITH
 ENDS_WITH
 ```
 
-Rules are evaluated in ascending priority order. If no rule matches, evaluation falls back to percentage rollout.
+Rules are evaluated in ascending priority order. Priority is optional when creating a rule; when it is omitted, ReleasePilot assigns `100`. Lower numeric values run first, and the rule ID provides deterministic ordering when priorities are equal. If no rule matches, evaluation falls back to percentage rollout.
 
 ## Environments
 
@@ -286,7 +286,7 @@ FlagTether / Nginx
      PostgreSQL
 ```
 
-Database schema changes are managed through Flyway. More detail, including design decisions and trade-offs, is in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+Database schema changes are managed through Flyway. Core invariants are also enforced at the PostgreSQL boundary, including rollout and environment constraints, feature/environment uniqueness, targeting-rule referential integrity, supported targeting attributes, and nonblank persisted values. More detail, including design decisions and trade-offs, is in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## Repository layout
 
@@ -335,7 +335,7 @@ GitHub Actions currently verifies:
 - frontend ESLint and TypeScript/Vite production build;
 - CodeQL security analysis.
 
-The backend integration tests run against PostgreSQL through Testcontainers rather than substituting an in-memory database.
+The backend integration tests run against PostgreSQL through Testcontainers rather than substituting an in-memory database. They cover real migrations, transactional rollback behavior, evaluation, and database-level domain constraints.
 
 Browser-level end-to-end tests and production load testing are not implemented yet.
 
@@ -387,6 +387,7 @@ Audit history is intended for configuration traceability; it is not a complete s
 - SQL remains explicit in repositories rather than introducing an ORM at this stage.
 - Spring owns database connections through `DataSource`.
 - Schema evolution belongs to Flyway migrations.
+- Core domain invariants are mirrored at the database boundary so invalid direct writes cannot create state the evaluation engine cannot interpret.
 - Environment is part of a feature flag's identity.
 - Local frontend development uses a Vite reverse proxy rather than weakening backend CORS policy.
 - The production-like stack uses same-origin Nginx proxying so the browser does not need to know the internal API hostname.
