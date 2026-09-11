@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { NavLink, Outlet } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, NavLink, Outlet } from "react-router-dom";
 import { Icon } from "./Icon";
 
 const githubUrl = "https://github.com/Akerem-dev/releasepilot";
@@ -8,6 +8,23 @@ export function AppShell() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const closeMobile = () => setMobileOpen(false);
+
+  useEffect(() => {
+    if (!mobileOpen) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") setMobileOpen(false);
+    }
+
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("keydown", closeOnEscape);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [mobileOpen]);
 
   return (
     <div className="app-shell">
@@ -18,13 +35,14 @@ export function AppShell() {
           onClick={() => setMobileOpen((value) => !value)}
           aria-expanded={mobileOpen}
           aria-controls="app-sidebar"
+          aria-label={mobileOpen ? "Close navigation" : "Open navigation"}
         >
-          Menu
+          {mobileOpen ? "Close" : "Menu"}
         </button>
-        <a href="/flags" className="mobile-brand" aria-label="FlagTether home">
+        <Link to="/flags" className="mobile-brand" aria-label="FlagTether home" onClick={closeMobile}>
           <Icon name="brand-mark" size={20} />
           <strong>FlagTether</strong>
-        </a>
+        </Link>
       </header>
 
       {mobileOpen ? (
@@ -44,7 +62,7 @@ export function AppShell() {
 
         <div className="sidebar-section sidebar-project-section">
           <span className="sidebar-section-label">Project</span>
-          <button className="project-switcher" type="button" title="Current project">
+          <button className="project-switcher" type="button" title="Current project: flagtether-api">
             <Icon name="project" size={18} />
             <span>flagtether-api</span>
             <Icon name="chevron-down" size={15} className="project-chevron" />
@@ -55,6 +73,7 @@ export function AppShell() {
           <span className="sidebar-section-label">Manage</span>
           <NavLink
             to="/flags"
+            title="Flags"
             onClick={closeMobile}
             className={({ isActive }) => `sidebar-link ${isActive ? "active" : ""}`}
           >
@@ -63,6 +82,7 @@ export function AppShell() {
           </NavLink>
           <NavLink
             to="/audit"
+            title="Audit log"
             onClick={closeMobile}
             className={({ isActive }) => `sidebar-link ${isActive ? "active" : ""}`}
           >
@@ -73,6 +93,7 @@ export function AppShell() {
           <span className="sidebar-section-label developer-label">Developer</span>
           <NavLink
             to="/api"
+            title="API"
             onClick={closeMobile}
             className={({ isActive }) => `sidebar-link ${isActive ? "active" : ""}`}
           >
@@ -82,12 +103,12 @@ export function AppShell() {
         </nav>
 
         <div className="sidebar-footer">
-          <a className="sidebar-footer-link" href="http://localhost:8080/swagger-ui.html" target="_blank" rel="noreferrer">
+          <a className="sidebar-footer-link" href="http://localhost:8080/swagger-ui.html" target="_blank" rel="noreferrer" title="Docs">
             <Icon name="docs" size={18} />
             <span>Docs</span>
             <Icon name="external-link" size={14} className="external-icon" />
           </a>
-          <a className="sidebar-footer-link" href={githubUrl} target="_blank" rel="noreferrer">
+          <a className="sidebar-footer-link" href={githubUrl} target="_blank" rel="noreferrer" title="GitHub">
             <Icon name="repository" size={18} />
             <span>GitHub</span>
             <Icon name="external-link" size={14} className="external-icon" />

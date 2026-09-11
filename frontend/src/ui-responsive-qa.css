@@ -1,0 +1,147 @@
+/* Final responsive QA hardening.
+   Keeps the desktop product density while preventing accidental viewport overflow
+   and making touch/mobile interactions more predictable. */
+
+html,
+body,
+#root,
+.app-shell,
+.main-content {
+  max-width: 100%;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+.table-scroll,
+.code-panel {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-inline: contain;
+}
+
+@media (max-width: 1250px) {
+  .sidebar-link,
+  .project-switcher,
+  .sidebar-footer-link {
+    position: relative;
+  }
+}
+
+@media (max-width: 820px) {
+  .main-content,
+  .page,
+  .page-header,
+  .page-header-actions,
+  .targeting-main,
+  .evaluation-panel,
+  .endpoint-detail,
+  .request-response-grid,
+  .request-response-grid > section,
+  .table-shell,
+  .table-scroll {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .mobile-header {
+    padding-left: max(16px, env(safe-area-inset-left));
+    padding-right: max(16px, env(safe-area-inset-right));
+  }
+
+  .sidebar {
+    max-width: min(240px, calc(100vw - 44px));
+  }
+
+  .sidebar-scrim {
+    touch-action: none;
+  }
+
+  .flags-table {
+    min-width: 620px;
+  }
+
+  .rules-table {
+    min-width: 680px;
+  }
+
+  .audit-table {
+    min-width: 760px;
+  }
+
+  .table-scroll {
+    scrollbar-width: thin;
+  }
+
+  .select-menu-popover,
+  .columns-popover,
+  .row-menu-popover {
+    max-width: calc(100vw - 32px);
+  }
+
+  .targeting-page .evaluation-panel {
+    width: 100%;
+  }
+
+  .api-page .endpoint-item {
+    grid-template-columns: 48px minmax(0, 1fr);
+  }
+
+  .api-page .endpoint-title-line {
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .api-page .endpoint-title-line h2 code,
+  .api-page .request-url code:last-child {
+    overflow-wrap: anywhere;
+    white-space: normal;
+  }
+
+  .api-page .code-panel {
+    min-height: 220px;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 520px) {
+  .page {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .mobile-header {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .page-title-block h1 {
+    font-size: 23px;
+  }
+
+  .detail-tabs,
+  .api-tabs {
+    scrollbar-width: none;
+  }
+
+  .detail-tabs::-webkit-scrollbar,
+  .api-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .flags-table {
+    min-width: 560px;
+  }
+
+  .rules-table {
+    min-width: 640px;
+  }
+
+  .audit-table {
+    min-width: 700px;
+  }
+
+  .modal-panel {
+    max-height: calc(100dvh - 20px);
+  }
+}
