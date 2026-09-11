@@ -11,6 +11,7 @@ import { Icon } from "../components/Icon";
 import { Modal } from "../components/Modal";
 import { PageHeader, StatusDot } from "../components/PageChrome";
 import { RolloutControl } from "../components/RolloutControl";
+import { useToast } from "../components/Toast";
 import type { AuditLogEntry, Environment, FeatureFlag, TargetingRule } from "../types";
 
 function relative(value?: string) {
@@ -49,6 +50,7 @@ export function FlagOverviewPage({
   const { name: encodedName } = useParams();
   const name = decodeURIComponent(encodedName ?? "");
   const navigate = useNavigate();
+  const { notify } = useToast();
   const [flag, setFlag] = useState<FeatureFlag | null>(null);
   const [rules, setRules] = useState<TargetingRule[]>([]);
   const [activity, setActivity] = useState<AuditLogEntry[]>([]);
@@ -107,6 +109,10 @@ export function FlagOverviewPage({
       }
       setFlag(next);
       setEditOpen(false);
+      notify({
+        title: "Changes saved",
+        message: `${name} is ${next.enabled ? "On" : "Off"} with ${next.rolloutPercentage}% default rollout.`,
+      });
       await load();
     } catch (saveError) {
       setError(saveError instanceof Error ? saveError.message : "Could not save flag changes.");
@@ -118,14 +124,28 @@ export function FlagOverviewPage({
   async function quickToggle() {
     if (!flag) return;
     setSaving(true);
+    setError(null);
     try {
       const next = await setFeatureFlagEnabled(environment, name, !flag.enabled);
       setFlag(next);
       setEditEnabled(next.enabled);
+      notify({
+        title: next.enabled ? "Flag enabled" : "Flag disabled",
+        message: `${name} is now ${next.enabled ? "On" : "Off"} in ${environmentName.toLowerCase()}.`,
+      });
     } catch (toggleError) {
       setError(toggleError instanceof Error ? toggleError.message : "Could not update flag.");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function copyFlagKey() {
+    try {
+      await navigator.clipboard.writeText(flag.name);
+      notify({ title: "Copied", message: "Flag key copied to clipboard.", tone: "info", duration: 2200 });
+    } catch {
+      notify({ title: "Copy failed", message: "Clipboard access is unavailable in this browser.", tone: "error" });
     }
   }
 
@@ -182,7 +202,7 @@ export function FlagOverviewPage({
         <h2>Configuration</h2>
         <div className="property-grid overview-property-grid">
           <dl>
-            <div><dt>Flag key</dt><dd><code>{flag.name}</code> <button className="copy-inline" type="button" onClick={() => void navigator.clipboard.writeText(flag.name)} aria-label="Copy flag key"><Icon name="copy" size={15} /></button></dd></div>
+            <div><dt>Flag key</dt><dd><code>{flag.name}</code> <button className="copy-inline" type="button" onClick={() => void copyFlagKey()} aria-label="Copy flag key"><Icon name="copy" size={15} /></button></dd></div>
             <div><dt>Environment</dt><dd>{environmentName}</dd></div>
             <div><dt>State</dt><dd><StatusDot enabled={flag.enabled} /> {flag.enabled ? "On" : "Off"}</dd></div>
           </dl>
@@ -249,7 +269,7 @@ export function FlagOverviewPage({
             <input type="checkbox" checked={editEnabled} onChange={(event) => setEditEnabled(event.target.checked)} />
             <span><strong>Enabled</strong><small>Serve this flag in {environmentName.toLowerCase()}.</small></span>
           </label>
-          <div className="dialog-actions"><button className="secondary-button" type="button" onClick={() => setEditOpen(false)}>Cancel</button><button className="primary-button" type="button" onClick={() => void saveEdit()} disabled={saving}>{saving ? "Saving…" : "Save changes"}</button></div>
+          <div className="dialog-actions"><button className="secondary-button" type="button" onClick={() => setEditOpen(false)}>Cancel</button><button className={`primary-button ${saving ? "busy-button" : ""}`} type="button" onClick={() => void saveEdit()} aria-busy={saving} disabled={saving}>{saving ? "Saving…" : "Save changes"}</button></div>
         </div>
       </Modal>
     </div>
