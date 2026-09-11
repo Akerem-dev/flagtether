@@ -41,6 +41,7 @@ public class FeatureFlagEvaluationService {
       String email) {
 
     validateUserKey(userKey);
+    String normalizedUserKey = userKey.trim();
 
     FeatureFlag flag = featureFlagService.getFlagByName(flagName, environment);
 
@@ -48,7 +49,7 @@ public class FeatureFlagEvaluationService {
 
     if (!flag.isEnabled()) {
 
-      return result(flag, userKey, false, EvaluationReason.FLAG_DISABLED, -1, null);
+      return result(flag, normalizedUserKey, false, EvaluationReason.FLAG_DISABLED, -1, null);
     }
 
     List<TargetingRule> rules =
@@ -56,7 +57,8 @@ public class FeatureFlagEvaluationService {
 
     for (TargetingRule rule : rules) {
 
-      String actualValue = getContextValue(rule.getAttribute(), userKey, country, plan, email);
+      String actualValue =
+          getContextValue(rule.getAttribute(), normalizedUserKey, country, plan, email);
 
       if (actualValue == null) {
 
@@ -67,7 +69,7 @@ public class FeatureFlagEvaluationService {
 
         return result(
             flag,
-            userKey,
+            normalizedUserKey,
             rule.isServeEnabled(),
             EvaluationReason.TARGETING_MATCH,
             -1,
@@ -77,22 +79,22 @@ public class FeatureFlagEvaluationService {
 
     if (rolloutPercentage == 0) {
 
-      return result(flag, userKey, false, EvaluationReason.ROLLOUT_ZERO, -1, null);
+      return result(flag, normalizedUserKey, false, EvaluationReason.ROLLOUT_ZERO, -1, null);
     }
 
     if (rolloutPercentage == 100) {
 
-      return result(flag, userKey, true, EvaluationReason.ROLLOUT_FULL, -1, null);
+      return result(flag, normalizedUserKey, true, EvaluationReason.ROLLOUT_FULL, -1, null);
     }
 
-    int bucket = calculateBucket(flag.getEnvironment(), flag.getName(), userKey);
+    int bucket = calculateBucket(flag.getEnvironment(), flag.getName(), normalizedUserKey);
 
     boolean enabledForUser = bucket < rolloutPercentage;
 
     EvaluationReason reason =
         enabledForUser ? EvaluationReason.ROLLOUT_MATCH : EvaluationReason.ROLLOUT_MISS;
 
-    return result(flag, userKey, enabledForUser, reason, bucket, null);
+    return result(flag, normalizedUserKey, enabledForUser, reason, bucket, null);
   }
 
   private FeatureFlagEvaluation result(
@@ -132,9 +134,13 @@ public class FeatureFlagEvaluationService {
 
   private boolean matches(String actualValue, TargetingRule rule) {
 
-    String actual = actualValue.trim().toLowerCase(Locale.ROOT);
+    String actual = actualValue.trim();
+    String expected = rule.getComparisonValue().trim();
 
-    String expected = rule.getComparisonValue().trim().toLowerCase(Locale.ROOT);
+    if (!rule.getAttribute().equals("userkey")) {
+      actual = actual.toLowerCase(Locale.ROOT);
+      expected = expected.toLowerCase(Locale.ROOT);
+    }
 
     return switch (rule.getOperator()) {
       case EQUALS -> actual.equals(expected);

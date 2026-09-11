@@ -55,6 +55,39 @@ class FeatureFlagEvaluationServiceTest {
   }
 
   @Test
+  void userKeyTargetingIsCaseSensitive() {
+    FeatureFlag flag = new FeatureFlag("new_checkout", "prod", true, 0);
+    TargetingRule rule =
+        new TargetingRule(
+            42L, "new_checkout", "prod", "userKey", TargetingOperator.EQUALS, "User123", true, 10);
+
+    when(featureFlagService.getFlagByName("new_checkout", "prod")).thenReturn(flag);
+    when(targetingRuleService.getRules("new_checkout", "prod")).thenReturn(List.of(rule));
+
+    FeatureFlagEvaluation result = evaluationService.evaluate("new_checkout", "prod", "user123");
+
+    assertThat(result.isEnabled()).isFalse();
+    assertThat(result.getReason()).isEqualTo(EvaluationReason.ROLLOUT_ZERO);
+    assertThat(result.getMatchedRuleId()).isNull();
+  }
+
+  @Test
+  void surroundingWhitespaceInUserKeyIsNormalizedConsistently() {
+    FeatureFlag flag = new FeatureFlag("new_checkout", "prod", true, 50);
+    when(featureFlagService.getFlagByName("new_checkout", "prod")).thenReturn(flag);
+    when(targetingRuleService.getRules("new_checkout", "prod")).thenReturn(List.of());
+
+    FeatureFlagEvaluation trimmed =
+        evaluationService.evaluate("new_checkout", "prod", "stable-user");
+    FeatureFlagEvaluation padded =
+        evaluationService.evaluate("new_checkout", "prod", "  stable-user  ");
+
+    assertThat(padded.getUserKey()).isEqualTo("stable-user");
+    assertThat(padded.getBucket()).isEqualTo(trimmed.getBucket());
+    assertThat(padded.isEnabled()).isEqualTo(trimmed.isEnabled());
+  }
+
+  @Test
   void deterministicRolloutKeepsSameUserInSameBucket() {
     FeatureFlag flag = new FeatureFlag("new_checkout", "prod", true, 50);
     when(featureFlagService.getFlagByName("new_checkout", "prod")).thenReturn(flag);
