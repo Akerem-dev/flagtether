@@ -1,12 +1,6 @@
 import type { ReactNode } from "react";
 import type { Environment } from "../types";
 
-export const ENVIRONMENT_LABELS: Record<Environment, string> = {
-  dev: "Dev",
-  staging: "Staging",
-  prod: "Production",
-};
-
 export function EnvironmentSelect({
   value,
   onChange,
