@@ -50,8 +50,7 @@ class RequestValidationTest {
     CreateTargetingRuleRequest missingFields = new CreateTargetingRuleRequest();
 
     assertThat(fields(validator.validate(missingFields)))
-        .containsExactlyInAnyOrder(
-            "attribute", "operator", "comparisonValue", "serveEnabled", "priority");
+        .containsExactlyInAnyOrder("attribute", "operator", "comparisonValue", "serveEnabled");
 
     CreateTargetingRuleRequest negativePriority = new CreateTargetingRuleRequest();
     negativePriority.setAttribute("country");
