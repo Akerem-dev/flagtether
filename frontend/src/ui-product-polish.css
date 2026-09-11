@@ -1,0 +1,219 @@
+/* Final product polish for targeting, audit, and API screens.
+   Keeps the restrained FlagTether developer-tool visual language consistent. */
+
+/* Targeting */
+.targeting-page .page-header { min-height: 112px; }
+.targeting-page .detail-title-row { gap: 10px; }
+.targeting-page .state-select-button.static-state {
+  min-height: 28px;
+  gap: 7px;
+  padding: 0 9px;
+  border: 1px solid #d0d7de;
+  border-radius: 5px;
+  background: #fff;
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 600;
+}
+.targeting-page .breadcrumb-line { margin-top: 16px; font-size: 12px; }
+.targeting-page .detail-tabs { margin-top: 14px; }
+.targeting-page .detail-tabs a,
+.targeting-page .detail-tabs button {
+  min-height: 38px;
+  padding: 0 2px;
+  margin-right: 24px;
+  font-size: 13px;
+}
+.targeting-layout {
+  gap: 28px;
+  margin-top: 28px;
+}
+.targeting-heading { margin-bottom: 14px; }
+.targeting-heading h2,
+.default-rollout-section h2,
+.evaluation-panel h2 {
+  font-size: 17px;
+  font-weight: 650;
+  letter-spacing: -.2px;
+}
+.targeting-heading p,
+.default-rollout-section > p,
+.evaluation-panel > p {
+  margin-top: 5px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.rules-shell { border-radius: 5px; }
+.rules-table th { height: 40px; }
+.rules-table td { height: 50px; }
+.rules-table .code-token {
+  border: 0;
+  background: #f6f8fa;
+  padding: 2px 5px;
+  border-radius: 3px;
+  font-size: 11.5px;
+}
+.rule-actions { gap: 6px; }
+.rule-actions .text-button { font-size: 12px; }
+.default-rollout-section { margin-top: 28px; }
+.default-rollout-box {
+  min-height: 58px;
+  margin-top: 12px;
+  padding: 0 16px;
+  border-radius: 5px;
+  background: #fff;
+}
+.default-rollout-box > span { gap: 8px; font-size: 12.5px; }
+.default-rollout-box a { font-size: 12px; }
+.evaluation-panel {
+  padding: 18px;
+  border-radius: 5px;
+  background: #fff;
+  box-shadow: none;
+  align-self: start;
+  position: sticky;
+  top: 18px;
+}
+.evaluation-hint {
+  margin-bottom: 16px !important;
+  color: #667085;
+}
+.evaluation-form { gap: 12px; }
+.evaluation-form .field-label { gap: 6px; font-size: 12px; }
+.evaluation-form .field-label input { height: 36px; }
+.evaluation-form .primary-button.full-width { margin-top: 2px; }
+.evaluation-result { margin-top: 14px; padding-top: 14px; }
+.match-box {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 4px;
+  box-shadow: none;
+}
+
+/* Audit */
+.audit-page .page-header { min-height: 112px; }
+.audit-toolbar {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) repeat(4, auto);
+  gap: 8px;
+  align-items: center;
+}
+.audit-toolbar .search-control { min-width: 0; }
+.audit-toolbar .select-menu { min-width: 122px; }
+.audit-toolbar .select-menu-trigger {
+  min-height: 36px;
+  padding-inline: 10px;
+}
+.audit-toolbar .select-menu-popover { min-width: 168px; }
+.audit-table-shell { margin-top: 14px; border-radius: 5px; }
+.audit-table th { height: 40px; }
+.audit-table td { height: 48px; }
+.audit-group-row td {
+  height: 42px;
+  background: #f7f9fb;
+}
+.audit-group-row strong { font-size: 12.5px; }
+.audit-group-row span { font-size: 11px; }
+.audit-event-cell strong { font-size: 12.5px; }
+.audit-event-cell span {
+  margin-left: 10px;
+  color: #667085;
+  font-size: 11.5px;
+}
+.audit-table .icon-button { width: 28px; height: 28px; border-radius: 4px; }
+
+/* API */
+.api-page .page-header { min-height: 112px; }
+.base-url-card {
+  min-height: 34px;
+  padding: 0 9px;
+  border-radius: 5px;
+  box-shadow: none;
+}
+.base-url-card span { font-size: 11px; }
+.base-url-card code { font-size: 11.5px; }
+.api-health { padding-left: 4px; }
+.api-tabs { margin-top: 14px; }
+.api-tabs button {
+  min-height: 38px;
+  padding-inline: 2px;
+  margin-right: 24px;
+  font-size: 13px;
+}
+.api-layout {
+  margin-top: 24px;
+  gap: 28px;
+}
+.endpoint-nav { padding-right: 20px; }
+.endpoint-search { margin-bottom: 18px; }
+.endpoint-group h2 {
+  margin: 16px 0 8px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: #667085;
+}
+.endpoint-item {
+  min-height: 48px;
+  padding: 7px 8px;
+  border-radius: 4px;
+}
+.endpoint-item.active { background: #f2f6fb; }
+.endpoint-item code { font-size: 11px; }
+.endpoint-item small { margin-top: 2px; font-size: 10.5px; }
+.method-badge {
+  min-width: 46px;
+  height: 22px;
+  border-radius: 3px;
+  font-size: 10px;
+}
+.endpoint-detail { min-width: 0; }
+.endpoint-detail-header {
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+}
+.endpoint-title-line h2 { font-size: 18px; }
+.endpoint-title-line h2 code { font-size: 13px; }
+.endpoint-detail-header p { margin-top: 6px; font-size: 12px; }
+.endpoint-actions { gap: 8px; }
+.request-response-grid { gap: 28px; margin-top: 22px; }
+.request-response-grid h3,
+.field-notes h3,
+.response-heading h3,
+.api-static-section h2 { font-size: 15px; }
+.request-url {
+  min-height: 38px;
+  border-radius: 4px;
+  box-shadow: none;
+}
+.code-panel {
+  border-radius: 4px;
+  box-shadow: none;
+  font-size: 11.5px;
+  line-height: 1.55;
+}
+.field-notes dl > div { min-height: 42px; }
+.api-static-section { margin-top: 24px; }
+
+@media (max-width: 1120px) {
+  .audit-toolbar { grid-template-columns: minmax(260px, 1fr) repeat(2, auto); }
+}
+
+@media (max-width: 820px) {
+  .targeting-layout { grid-template-columns: 1fr; }
+  .evaluation-panel { position: static; }
+  .audit-toolbar { grid-template-columns: 1fr 1fr; }
+  .audit-toolbar .search-control { grid-column: 1 / -1; }
+  .api-layout { grid-template-columns: 1fr; }
+  .endpoint-nav {
+    padding-right: 0;
+    padding-bottom: 20px;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+}
+
+@media (max-width: 620px) {
+  .audit-toolbar { grid-template-columns: 1fr; }
+  .audit-toolbar .search-control { grid-column: auto; }
+}
