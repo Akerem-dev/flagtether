@@ -7,6 +7,7 @@ import "./ui-polish.css";
 import "./ui-polish-pass2.css";
 import "./ui-polish-pass3.css";
 import "./ui-overview-polish.css";
+import "./ui-product-polish.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
