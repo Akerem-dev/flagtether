@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -114,5 +115,55 @@ class ReleasePilotIntegrationTest {
 
     assertThat(flagCount).isZero();
     assertThat(auditCount).isZero();
+  }
+
+  @Test
+  void databaseEnforcesApplicationDomainConstraints() {
+    String flagName = "constraint_checkout";
+
+    jdbcTemplate.update(
+        "DELETE FROM feature_flags WHERE name = ? AND environment = ?", flagName, "prod");
+    featureFlagService.createFlag(flagName, "prod", true, 50);
+
+    try {
+      assertThatThrownBy(
+              () ->
+                  jdbcTemplate.update(
+                      """
+                      INSERT INTO targeting_rules
+                          (flag_name, environment, attribute, operator,
+                           comparison_value, serve_enabled, priority)
+                      VALUES (?, 'prod', 'device', 'EQUALS', 'mobile', TRUE, 10)
+                      """,
+                      flagName))
+          .isInstanceOf(DataIntegrityViolationException.class);
+
+      assertThatThrownBy(
+              () ->
+                  jdbcTemplate.update(
+                      """
+                      INSERT INTO targeting_rules
+                          (flag_name, environment, attribute, operator,
+                           comparison_value, serve_enabled, priority)
+                      VALUES (?, 'prod', 'country', 'EQUALS', '   ', TRUE, 10)
+                      """,
+                      flagName))
+          .isInstanceOf(DataIntegrityViolationException.class);
+
+      assertThatThrownBy(
+              () ->
+                  jdbcTemplate.update(
+                      """
+                      INSERT INTO feature_flags
+                          (name, environment, enabled, rollout_percentage)
+                      VALUES ('   ', 'staging', TRUE, 50)
+                      """))
+          .isInstanceOf(DataIntegrityViolationException.class);
+    } finally {
+      jdbcTemplate.update(
+          "DELETE FROM feature_flags WHERE name = ? AND environment = ?", flagName, "prod");
+      jdbcTemplate.update(
+          "DELETE FROM feature_flags WHERE btrim(name) = '' AND environment = 'staging'");
+    }
   }
 }
