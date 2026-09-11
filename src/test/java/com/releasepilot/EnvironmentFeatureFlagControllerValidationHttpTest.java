@@ -63,4 +63,22 @@ class EnvironmentFeatureFlagControllerValidationHttpTest {
                 .content("{}"))
         .andExpect(status().isBadRequest());
   }
+
+  @Test
+  void targetingRuleEndpointRejectsMissingPriority() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/environments/prod/flags/checkout-v2/rules")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "attribute": "country",
+                      "operator": "EQUALS",
+                      "comparisonValue": "TR",
+                      "serveEnabled": true
+                    }
+                    """))
+        .andExpect(status().isBadRequest());
+  }
 }
