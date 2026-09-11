@@ -45,7 +45,6 @@ class RequestParameterErrorHttpTest {
         .perform(get("/api/environments/prod/flags/checkout-v2/evaluate"))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.status").value(400))
-        .andExpect(
-            jsonPath("$.message").value("Missing required request parameter: userKey"));
+        .andExpect(jsonPath("$.message").value("Missing required request parameter: userKey"));
   }
 }
