@@ -194,7 +194,6 @@ export function FlagOverviewPage({
         <Link className="active" to={`/flags/${encodeURIComponent(name)}`}>Overview</Link>
         <Link to={`/flags/${encodeURIComponent(name)}/targeting`}>Targeting</Link>
         <Link to={`/audit?flag=${encodeURIComponent(name)}&environment=${environment}`}>History</Link>
-        <button type="button" disabled title="No additional settings for this flag">Settings</button>
       </nav>
 
       {error ? <div className="inline-alert" role="alert">{error}<button type="button" onClick={() => setError(null)} aria-label="Dismiss"><Icon name="close" size={16} /></button></div> : null}
