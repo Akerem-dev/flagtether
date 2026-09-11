@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { getAuditLog } from "../api";
 import { Icon } from "../components/Icon";
 import { PageHeader } from "../components/PageChrome";
+import { SelectMenu, type SelectMenuOption } from "../components/SelectMenu";
 import type { AuditLogEntry, Environment } from "../types";
 
 const ENVIRONMENT_LABELS: Record<Environment, string> = {
@@ -10,6 +11,11 @@ const ENVIRONMENT_LABELS: Record<Environment, string> = {
   staging: "Staging",
   prod: "Production",
 };
+
+const SORT_OPTIONS: SelectMenuOption[] = [
+  { value: "desc", label: "Newest first" },
+  { value: "asc", label: "Oldest first" },
+];
 
 function actionLabel(action: string) {
   return action
@@ -87,6 +93,16 @@ export function AuditPage({
   const flags = useMemo(() => Array.from(new Set(entries.map((entry) => entry.flagName))).sort(), [entries]);
   const actions = useMemo(() => Array.from(new Set(entries.map((entry) => entry.action))).sort(), [entries]);
 
+  const actionOptions = useMemo<SelectMenuOption[]>(
+    () => [{ value: "all", label: "All actions" }, ...actions.map((action) => ({ value: action, label: actionLabel(action) }))],
+    [actions],
+  );
+
+  const flagOptions = useMemo<SelectMenuOption[]>(
+    () => [{ value: "all", label: "All flags" }, ...flags.map((flag) => ({ value: flag, label: flag }))],
+    [flags],
+  );
+
   const filtered = useMemo(() => {
     const query = search.trim().toLowerCase();
     const result = entries.filter((entry) => {
@@ -142,20 +158,27 @@ export function AuditPage({
           <span className="sr-only">Search events</span>
           <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search events..." />
         </label>
-        <select className="control-select" value={actionFilter} onChange={(event) => setActionFilter(event.target.value)} aria-label="Filter by action">
-          <option value="all">Action</option>
-          {actions.map((action) => <option key={action} value={action}>{actionLabel(action)}</option>)}
-        </select>
-        <select className="control-select" value={environment} onChange={(event) => changeEnvironment(event.target.value as Environment)} aria-label="Filter by environment">
-          <option value="dev">Dev</option><option value="staging">Staging</option><option value="prod">Production</option>
-        </select>
-        <select className="control-select" value={flagFilter} onChange={(event) => changeFlag(event.target.value)} aria-label="Filter by flag">
-          <option value="all">Flag</option>
-          {flags.map((flag) => <option key={flag} value={flag}>{flag}</option>)}
-        </select>
-        <select className="control-select" value={sortDirection} onChange={(event) => setSortDirection(event.target.value as "asc" | "desc")} aria-label="Sort audit events">
-          <option value="desc">Newest first</option><option value="asc">Oldest first</option>
-        </select>
+        <SelectMenu
+          value={actionFilter}
+          onChange={setActionFilter}
+          options={actionOptions}
+          ariaLabel="Filter audit events by action"
+          className="audit-filter-menu"
+        />
+        <SelectMenu
+          value={flagFilter}
+          onChange={changeFlag}
+          options={flagOptions}
+          ariaLabel="Filter audit events by flag"
+          className="audit-filter-menu"
+        />
+        <SelectMenu
+          value={sortDirection}
+          onChange={(value) => setSortDirection(value as "asc" | "desc")}
+          options={SORT_OPTIONS}
+          ariaLabel="Sort audit events"
+          className="audit-filter-menu audit-sort-menu"
+        />
       </section>
 
       {error ? <div className="inline-alert" role="alert">{error}<button type="button" onClick={() => setError(null)} aria-label="Dismiss"><Icon name="close" size={16} /></button></div> : null}
