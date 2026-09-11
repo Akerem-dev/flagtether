@@ -141,6 +141,7 @@ export function FlagOverviewPage({
   }
 
   async function copyFlagKey() {
+    if (!flag) return;
     try {
       await navigator.clipboard.writeText(flag.name);
       notify({ title: "Copied", message: "Flag key copied to clipboard.", tone: "info", duration: 2200 });
