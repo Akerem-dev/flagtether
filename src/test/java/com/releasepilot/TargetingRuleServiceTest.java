@@ -33,20 +33,12 @@ class TargetingRuleServiceTest {
     FeatureFlag flag = new FeatureFlag("checkout-v2", "prod", true, 50);
     TargetingRule created =
         new TargetingRule(
-            7L,
-            "checkout-v2",
-            "prod",
-            "userkey",
-            TargetingOperator.EQUALS,
-            "User123",
-            true,
-            10);
+            7L, "checkout-v2", "prod", "userkey", TargetingOperator.EQUALS, "User123", true, 10);
 
     when(featureFlagService.getFlagByName("checkout-v2", "prod")).thenReturn(flag);
     when(repository.insert(any(TargetingRule.class))).thenReturn(created);
 
-    targetingRuleService.create(
-        "checkout-v2", "prod", " UserKey ", "equals", "User123", true, 10);
+    targetingRuleService.create("checkout-v2", "prod", " UserKey ", "equals", "User123", true, 10);
 
     ArgumentCaptor<TargetingRule> captor = ArgumentCaptor.forClass(TargetingRule.class);
     verify(repository).insert(captor.capture());
