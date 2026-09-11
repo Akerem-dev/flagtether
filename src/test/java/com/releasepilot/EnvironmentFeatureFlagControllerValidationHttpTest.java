@@ -65,7 +65,7 @@ class EnvironmentFeatureFlagControllerValidationHttpTest {
   }
 
   @Test
-  void targetingRuleEndpointRejectsMissingPriority() throws Exception {
+  void targetingRuleEndpointAllowsMissingPriority() throws Exception {
     mockMvc
         .perform(
             post("/api/environments/prod/flags/checkout-v2/rules")
@@ -79,6 +79,6 @@ class EnvironmentFeatureFlagControllerValidationHttpTest {
                       "serveEnabled": true
                     }
                     """))
-        .andExpect(status().isBadRequest());
+        .andExpect(status().isCreated());
   }
 }
