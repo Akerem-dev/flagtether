@@ -94,7 +94,8 @@ class ReleasePilotIntegrationTest {
       assertThatThrownBy(() -> featureFlagService.createFlag(flagName, "prod", true, 50))
           .isInstanceOf(RuntimeException.class);
     } finally {
-      jdbcTemplate.execute("DROP TRIGGER IF EXISTS fail_transaction_test_audit_insert ON audit_log");
+      jdbcTemplate.execute(
+          "DROP TRIGGER IF EXISTS fail_transaction_test_audit_insert ON audit_log");
       jdbcTemplate.execute("DROP FUNCTION IF EXISTS fail_transaction_test_audit_insert()");
     }
 
