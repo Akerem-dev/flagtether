@@ -10,6 +10,7 @@ import {
 import { Icon } from "../components/Icon";
 import { Modal } from "../components/Modal";
 import { PageHeader, StatusDot } from "../components/PageChrome";
+import { RolloutControl } from "../components/RolloutControl";
 import type { AuditLogEntry, Environment, FeatureFlag, TargetingRule } from "../types";
 
 function relative(value?: string) {
@@ -135,8 +136,8 @@ export function FlagOverviewPage({
         title={
           <span className="detail-title-row">
             <span>{flag.name}</span>
-            <button className="state-select-button" type="button" onClick={() => void quickToggle()} disabled={saving}>
-              <StatusDot enabled={flag.enabled} /> {flag.enabled ? "On" : "Off"} <Icon name="chevron-down" size={14} />
+            <button className="state-select-button" type="button" onClick={() => void quickToggle()} disabled={saving} title="Toggle flag state">
+              <StatusDot enabled={flag.enabled} /> {flag.enabled ? "On" : "Off"}
             </button>
           </span>
         }
@@ -167,7 +168,7 @@ export function FlagOverviewPage({
         <div className="property-grid">
           <dl>
             <div><dt>Key</dt><dd><code>{flag.name}</code> <button className="copy-inline" type="button" onClick={() => void navigator.clipboard.writeText(flag.name)} aria-label="Copy flag key"><Icon name="copy" size={16} /></button></dd></div>
-            <div><dt>Environment</dt><dd>{environment === "prod" ? "Production" : environment === "staging" ? "Staging" : "Dev"}</dd></div>
+            <div><dt>Environment</dt><dd>{environment === "prod" ? "Production" : environment === "staging" ? "Staging" : "Development"}</dd></div>
             <div><dt>State</dt><dd><StatusDot enabled={flag.enabled} /> {flag.enabled ? "On" : "Off"}</dd></div>
           </dl>
           <dl>
@@ -187,9 +188,15 @@ export function FlagOverviewPage({
             <div><dt>Targeting</dt><dd>{rules.length} {rules.length === 1 ? "rule" : "rules"}</dd></div>
           </dl>
           <dl>
-            <div><dt>Environment</dt><dd>{environment === "prod" ? "Production" : environment === "staging" ? "Staging" : "Dev"}</dd></div>
+            <div><dt>Environment</dt><dd>{environment === "prod" ? "Production" : environment === "staging" ? "Staging" : "Development"}</dd></div>
             <div><dt>Context fields</dt><dd>User + attributes</dd></div>
-            <div><dt>Key format</dt><dd><code>{keyFormat}</code></dd></div>
+            <div>
+              <dt>Key format</dt>
+              <dd className="key-format-value">
+                <code>{keyFormat}</code>
+                <small>{keyFormat === "kebab-case" ? "lowercase words separated by hyphens" : "custom naming pattern"}</small>
+              </dd>
+            </div>
           </dl>
         </div>
       </section>
@@ -212,7 +219,7 @@ export function FlagOverviewPage({
 
       <Modal open={editOpen} title={`Edit ${flag.name}`} description={`Update the ${environment} configuration.`} onClose={() => setEditOpen(false)}>
         <div className="form-stack">
-          <label className="field-label">Rollout<div className="range-row"><input type="range" min={0} max={100} value={editRollout} onChange={(event) => setEditRollout(Number(event.target.value))} /><output>{editRollout}%</output></div></label>
+          <RolloutControl value={editRollout} onChange={setEditRollout} label="Rollout" />
           <label className="switch-row"><span><strong>Enabled</strong><small>Serve the flag in this environment.</small></span><input type="checkbox" checked={editEnabled} onChange={(event) => setEditEnabled(event.target.checked)} /></label>
           <div className="dialog-actions"><button className="secondary-button" type="button" onClick={() => setEditOpen(false)}>Cancel</button><button className="primary-button" type="button" onClick={() => void saveEdit()} disabled={saving}>{saving ? "Saving…" : "Save changes"}</button></div>
         </div>
