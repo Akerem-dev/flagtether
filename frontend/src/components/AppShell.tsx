@@ -38,16 +38,16 @@ export function AppShell() {
 
       <aside id="app-sidebar" className={`sidebar ${mobileOpen ? "is-open" : ""}`}>
         <div className="sidebar-brand" aria-label="FlagTether">
-          <Icon name="brand-mark" size={20} className="brand-icon" />
+          <Icon name="brand-mark" size={22} className="brand-icon" />
           <span>FlagTether</span>
         </div>
 
         <div className="sidebar-section sidebar-project-section">
           <span className="sidebar-section-label">Project</span>
           <button className="project-switcher" type="button" title="Current project">
-            <Icon name="project" size={20} />
+            <Icon name="project" size={18} />
             <span>flagtether-api</span>
-            <Icon name="chevron-down" size={16} className="project-chevron" />
+            <Icon name="chevron-down" size={15} className="project-chevron" />
           </button>
         </div>
 
@@ -58,7 +58,7 @@ export function AppShell() {
             onClick={closeMobile}
             className={({ isActive }) => `sidebar-link ${isActive ? "active" : ""}`}
           >
-            <Icon name="flags" size={20} />
+            <Icon name="flags" size={18} />
             <span>Flags</span>
           </NavLink>
           <NavLink
@@ -66,7 +66,7 @@ export function AppShell() {
             onClick={closeMobile}
             className={({ isActive }) => `sidebar-link ${isActive ? "active" : ""}`}
           >
-            <Icon name="audit-log" size={20} />
+            <Icon name="audit-log" size={18} />
             <span>Audit log</span>
           </NavLink>
 
@@ -76,21 +76,21 @@ export function AppShell() {
             onClick={closeMobile}
             className={({ isActive }) => `sidebar-link ${isActive ? "active" : ""}`}
           >
-            <Icon name="api" size={20} />
+            <Icon name="api" size={18} />
             <span>API</span>
           </NavLink>
         </nav>
 
         <div className="sidebar-footer">
           <a className="sidebar-footer-link" href="http://localhost:8080/swagger-ui.html" target="_blank" rel="noreferrer">
-            <Icon name="docs" size={20} />
+            <Icon name="docs" size={18} />
             <span>Docs</span>
-            <Icon name="external-link" size={16} className="external-icon" />
+            <Icon name="external-link" size={14} className="external-icon" />
           </a>
           <a className="sidebar-footer-link" href={githubUrl} target="_blank" rel="noreferrer">
-            <Icon name="repository" size={20} />
+            <Icon name="repository" size={18} />
             <span>GitHub</span>
-            <Icon name="external-link" size={16} className="external-icon" />
+            <Icon name="external-link" size={14} className="external-icon" />
           </a>
         </div>
       </aside>
