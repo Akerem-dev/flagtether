@@ -63,50 +63,38 @@ public class FeatureFlagPostgresRepository {
     }
   }
 
-  public void updateEnabled(String name, boolean enabled) {
-    updateEnabled(name, "dev", enabled);
+  public boolean updateEnabled(String name, boolean enabled) {
+    return updateEnabled(name, "dev", enabled);
   }
 
-  public void updateEnabled(String name, String environment, boolean enabled) {
+  public boolean updateEnabled(String name, String environment, boolean enabled) {
     String sql =
         "UPDATE feature_flags " + "SET enabled = ? " + "WHERE name = ? AND environment = ?";
 
-    int affectedRows = jdbcTemplate.update(sql, enabled, name, environment);
-
-    if (affectedRows != 1) {
-      throw new IllegalStateException("Feature flag durumu guncellenemedi: " + name);
-    }
+    return jdbcTemplate.update(sql, enabled, name, environment) == 1;
   }
 
-  public void updateRollout(String name, int rolloutPercentage) {
-    updateRollout(name, "dev", rolloutPercentage);
+  public boolean updateRollout(String name, int rolloutPercentage) {
+    return updateRollout(name, "dev", rolloutPercentage);
   }
 
-  public void updateRollout(String name, String environment, int rolloutPercentage) {
+  public boolean updateRollout(String name, String environment, int rolloutPercentage) {
     String sql =
         "UPDATE feature_flags "
             + "SET rollout_percentage = ? "
             + "WHERE name = ? AND environment = ?";
 
-    int affectedRows = jdbcTemplate.update(sql, rolloutPercentage, name, environment);
-
-    if (affectedRows != 1) {
-      throw new IllegalStateException("Feature flag rollout degeri guncellenemedi: " + name);
-    }
+    return jdbcTemplate.update(sql, rolloutPercentage, name, environment) == 1;
   }
 
-  public void deleteByName(String name) {
-    deleteByName(name, "dev");
+  public boolean deleteByName(String name) {
+    return deleteByName(name, "dev");
   }
 
-  public void deleteByName(String name, String environment) {
+  public boolean deleteByName(String name, String environment) {
     String sql = "DELETE FROM feature_flags WHERE name = ? AND environment = ?";
 
-    int affectedRows = jdbcTemplate.update(sql, name, environment);
-
-    if (affectedRows != 1) {
-      throw new IllegalStateException("Feature flag silinemedi: " + name);
-    }
+    return jdbcTemplate.update(sql, name, environment) == 1;
   }
 
   private FeatureFlag mapRowToFeatureFlag(ResultSet resultSet, int rowNumber) throws SQLException {

@@ -86,7 +86,10 @@ public class FeatureFlagService {
       flag.disable();
     }
 
-    repository.updateEnabled(name, normalizedEnvironment, flag.isEnabled());
+    boolean updated = repository.updateEnabled(name, normalizedEnvironment, flag.isEnabled());
+    if (!updated) {
+      throw new FeatureFlagNotFoundException(name);
+    }
 
     AuditAction action = enabled ? AuditAction.FLAG_ENABLED : AuditAction.FLAG_DISABLED;
     auditLogService.record(
@@ -107,7 +110,11 @@ public class FeatureFlagService {
     int previousPercentage = flag.getRolloutPercentage();
 
     flag.updateRolloutPercentage(newPercentage);
-    repository.updateRollout(name, normalizedEnvironment, flag.getRolloutPercentage());
+    boolean updated =
+        repository.updateRollout(name, normalizedEnvironment, flag.getRolloutPercentage());
+    if (!updated) {
+      throw new FeatureFlagNotFoundException(name);
+    }
 
     auditLogService.record(
         AuditAction.FLAG_ROLLOUT_UPDATED,
@@ -138,7 +145,11 @@ public class FeatureFlagService {
     String normalizedEnvironment = normalizeEnvironment(environment);
     FeatureFlag flag = getExistingFlagOrThrow(name, normalizedEnvironment);
 
-    repository.deleteByName(name, normalizedEnvironment);
+    boolean deleted = repository.deleteByName(name, normalizedEnvironment);
+    if (!deleted) {
+      throw new FeatureFlagNotFoundException(name);
+    }
+
     auditLogService.record(
         AuditAction.FLAG_DELETED, flag.getName(), flag.getEnvironment(), "Feature flag deleted");
   }
