@@ -12,7 +12,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 
-class FeatureFlagControllerValidationHttpTest {
+class EnvironmentFeatureFlagControllerValidationHttpTest {
 
   private MockMvc mockMvc;
 
@@ -20,40 +20,45 @@ class FeatureFlagControllerValidationHttpTest {
   void setUp() {
     FeatureFlagService featureFlagService = mock(FeatureFlagService.class);
     FeatureFlagEvaluationService evaluationService = mock(FeatureFlagEvaluationService.class);
+    TargetingRuleService targetingRuleService = mock(TargetingRuleService.class);
 
     LocalValidatorFactoryBean validator = new LocalValidatorFactoryBean();
     validator.afterPropertiesSet();
 
     mockMvc =
         MockMvcBuilders.standaloneSetup(
-                new FeatureFlagController(featureFlagService, evaluationService))
+                new EnvironmentFeatureFlagController(
+                    featureFlagService, evaluationService, targetingRuleService))
             .setControllerAdvice(new GlobalExceptionHandler())
             .setValidator(validator)
             .build();
   }
 
   @Test
-  void legacyCreateEndpointRejectsMissingRequiredFields() throws Exception {
-    mockMvc
-        .perform(post("/api/flags").contentType(MediaType.APPLICATION_JSON).content("{}"))
-        .andExpect(status().isBadRequest());
-  }
-
-  @Test
-  void legacyEnabledEndpointRejectsMissingValue() throws Exception {
+  void createEndpointRejectsMissingRequiredFields() throws Exception {
     mockMvc
         .perform(
-            patch("/api/flags/checkout-v2/enabled")
+            post("/api/environments/prod/flags")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{}"))
         .andExpect(status().isBadRequest());
   }
 
   @Test
-  void legacyRolloutEndpointRejectsMissingValue() throws Exception {
+  void enabledEndpointRejectsMissingValue() throws Exception {
     mockMvc
         .perform(
-            patch("/api/flags/checkout-v2/rollout")
+            patch("/api/environments/prod/flags/checkout-v2/enabled")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{}"))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void rolloutEndpointRejectsMissingValue() throws Exception {
+    mockMvc
+        .perform(
+            patch("/api/environments/prod/flags/checkout-v2/rollout")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{}"))
         .andExpect(status().isBadRequest());
