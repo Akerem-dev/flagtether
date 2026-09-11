@@ -19,17 +19,18 @@ export function RolloutControl({
   caption?: string;
 }) {
   const safeValue = clampRollout(value);
+  const displayLabel = label === "Initial rollout" ? "Default rollout" : label;
   const sliderStyle = { "--rollout-value": `${safeValue}%` } as CSSProperties;
 
   return (
     <div className="rollout-control">
       <div className="rollout-control-header">
         <div>
-          <span className="rollout-control-label">{label}</span>
+          <span className="rollout-control-label">{displayLabel}</span>
           <small className="rollout-control-caption">{caption}</small>
         </div>
         <label className="rollout-value-field">
-          <span className="sr-only">{label} percentage</span>
+          <span className="sr-only">{displayLabel} percentage</span>
           <input
             type="number"
             min={0}
@@ -51,9 +52,8 @@ export function RolloutControl({
           value={safeValue}
           style={sliderStyle}
           onChange={(event) => onChange(Number(event.target.value))}
-          aria-label={`${label} percentage`}
+          aria-label={`${displayLabel} percentage`}
         />
-        <div className="rollout-scale" aria-hidden="true"><span>0</span><span>100</span></div>
       </div>
 
       <div className="rollout-presets" aria-label="Rollout presets">
