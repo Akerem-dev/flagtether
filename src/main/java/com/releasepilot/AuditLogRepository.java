@@ -22,8 +22,7 @@ public class AuditLogRepository {
             + "(action, flag_name, environment, details) "
             + "VALUES (?, ?, ?, ?)";
 
-    int affectedRows =
-        jdbcTemplate.update(sql, action.name(), flagName, environment, details);
+    int affectedRows = jdbcTemplate.update(sql, action.name(), flagName, environment, details);
 
     if (affectedRows != 1) {
       throw new IllegalStateException("Audit log yazilamadi.");
