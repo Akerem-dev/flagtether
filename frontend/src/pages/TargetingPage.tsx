@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   createTargetingRule,
@@ -10,6 +10,7 @@ import {
 import { Icon } from "../components/Icon";
 import { Modal } from "../components/Modal";
 import { PageHeader, StatusDot } from "../components/PageChrome";
+import { SelectMenu, type SelectMenuOption } from "../components/SelectMenu";
 import type {
   CreateTargetingRuleRequest,
   Environment,
@@ -30,6 +31,16 @@ const OPERATOR_LABELS: Record<TargetingOperator, string> = {
 const ATTRIBUTES: Array<TargetingRule["attribute"]> = ["userkey", "country", "plan", "email"];
 const OPERATORS: TargetingOperator[] = ["EQUALS", "NOT_EQUALS", "CONTAINS", "STARTS_WITH", "ENDS_WITH"];
 
+const ATTRIBUTE_OPTIONS: SelectMenuOption[] = ATTRIBUTES.map((attribute) => ({
+  value: attribute,
+  label: attribute === "userkey" ? "userKey" : attribute,
+}));
+
+const OPERATOR_OPTIONS: SelectMenuOption[] = OPERATORS.map((operator) => ({
+  value: operator,
+  label: OPERATOR_LABELS[operator],
+}));
+
 function attributeLabel(attribute: TargetingRule["attribute"]) {
   return attribute === "userkey" ? "userKey" : attribute;
 }
@@ -42,6 +53,25 @@ function reasonLabel(reason: FeatureFlagEvaluation["reason"]) {
     .join(" ");
 }
 
+function evaluationExplanation(evaluation: FeatureFlagEvaluation, matchedRule: TargetingRule | null) {
+  if (evaluation.reason === "FLAG_DISABLED") {
+    return "The flag is globally Off, so targeting rules and percentage rollout are skipped.";
+  }
+  if (evaluation.reason === "TARGETING_MATCH" && matchedRule) {
+    return `The first matching rule returned ${evaluation.enabled ? "On" : "Off"}.`;
+  }
+  if (evaluation.reason === "ROLLOUT_ZERO") {
+    return "No targeting rule matched and rollout is 0%, so this user receives Off.";
+  }
+  if (evaluation.reason === "ROLLOUT_FULL") {
+    return "No targeting rule matched and rollout is 100%, so this user receives On.";
+  }
+  if (evaluation.reason === "ROLLOUT_MATCH") {
+    return `No targeting rule matched. Bucket ${evaluation.bucket} falls inside the ${evaluation.rolloutPercentage}% rollout.`;
+  }
+  return `No targeting rule matched. Bucket ${evaluation.bucket} falls outside the ${evaluation.rolloutPercentage}% rollout.`;
+}
+
 export function TargetingPage({
   environment,
   onEnvironmentChange,
@@ -52,6 +82,8 @@ export function TargetingPage({
   const { name: encodedName } = useParams();
   const name = decodeURIComponent(encodedName ?? "");
   const navigate = useNavigate();
+  const evaluationPanelRef = useRef<HTMLElement>(null);
+  const userKeyInputRef = useRef<HTMLInputElement>(null);
   const [flag, setFlag] = useState<FeatureFlag | null>(null);
   const [rules, setRules] = useState<TargetingRule[]>([]);
   const [loading, setLoading] = useState(true);
@@ -64,7 +96,7 @@ export function TargetingPage({
   const [ruleServe, setRuleServe] = useState(true);
   const [rulePriority, setRulePriority] = useState(1);
   const [savingRule, setSavingRule] = useState(false);
-  const [userKey, setUserKey] = useState("user_123");
+  const [userKey, setUserKey] = useState("user-123");
   const [country, setCountry] = useState("TR");
   const [plan, setPlan] = useState("premium");
   const [email, setEmail] = useState("");
@@ -93,6 +125,16 @@ export function TargetingPage({
   useEffect(() => {
     void load();
   }, [load]);
+
+  function resetEvaluation() {
+    setEvaluation(null);
+    setEvaluationMs(null);
+  }
+
+  function focusEvaluation() {
+    evaluationPanelRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    window.setTimeout(() => userKeyInputRef.current?.focus(), 220);
+  }
 
   function openAddRule() {
     setEditingRule(null);
@@ -133,6 +175,7 @@ export function TargetingPage({
       }
       await createTargetingRule(environment, name, payload);
       setRuleOpen(false);
+      resetEvaluation();
       await load();
     } catch (saveError) {
       setError(saveError instanceof Error ? saveError.message : "Could not save targeting rule.");
@@ -147,6 +190,7 @@ export function TargetingPage({
     try {
       await deleteTargetingRule(environment, name, rule.id);
       setRules((current) => current.filter((item) => item.id !== rule.id));
+      resetEvaluation();
     } catch (deleteError) {
       setError(deleteError instanceof Error ? deleteError.message : "Could not delete targeting rule.");
     }
@@ -155,12 +199,17 @@ export function TargetingPage({
   async function runEvaluation(event?: FormEvent<HTMLFormElement>) {
     event?.preventDefault();
     if (!userKey.trim()) {
-      setError("User key is required for evaluation.");
+      setError("Enter a user key before running the evaluation.");
+      userKeyInputRef.current?.focus();
       return;
     }
+
     setEvaluating(true);
     setError(null);
+    setEvaluation(null);
+    setEvaluationMs(null);
     const started = performance.now();
+
     try {
       const result = await evaluateFeatureFlag(environment, name, {
         userKey: userKey.trim(),
@@ -171,6 +220,8 @@ export function TargetingPage({
       setEvaluation(result);
       setEvaluationMs(Math.max(1, Math.round(performance.now() - started)));
     } catch (evaluationError) {
+      setEvaluation(null);
+      setEvaluationMs(null);
       setError(evaluationError instanceof Error ? evaluationError.message : "Could not evaluate feature flag.");
     } finally {
       setEvaluating(false);
@@ -181,6 +232,12 @@ export function TargetingPage({
     () => (evaluation?.matchedRuleId == null ? null : rules.find((rule) => rule.id === evaluation.matchedRuleId) ?? null),
     [evaluation, rules],
   );
+
+  const matchedRuleNumber = useMemo(() => {
+    if (!matchedRule) return null;
+    const index = rules.findIndex((rule) => rule.id === matchedRule.id);
+    return index < 0 ? null : index + 1;
+  }, [matchedRule, rules]);
 
   if (loading && !flag) {
     return <div className="page"><div className="page-loading">Loading targeting rules…</div></div>;
@@ -198,7 +255,7 @@ export function TargetingPage({
         environment={environment}
         onEnvironmentChange={(value) => {
           onEnvironmentChange(value);
-          setEvaluation(null);
+          resetEvaluation();
           navigate(`/flags/${encodeURIComponent(name)}/targeting`);
         }}
       />
@@ -218,7 +275,7 @@ export function TargetingPage({
         <div className="targeting-main">
           <div className="section-heading-row targeting-heading">
             <div><h2>Targeting rules</h2><p>Evaluate rules in order. The first matching rule determines the flag value.</p></div>
-            <div className="section-actions"><button className="secondary-button" type="button" onClick={() => void runEvaluation()}><Icon name="evaluation" size={17} /> Test evaluation</button><button className="primary-button" type="button" onClick={openAddRule}><Icon name="plus" size={17} /> Add rule</button></div>
+            <div className="section-actions"><button className="secondary-button" type="button" onClick={focusEvaluation}><Icon name="evaluation" size={17} /> Test evaluation</button><button className="primary-button" type="button" onClick={openAddRule}><Icon name="plus" size={17} /> Add rule</button></div>
           </div>
 
           <section className="table-shell rules-shell">
@@ -248,26 +305,43 @@ export function TargetingPage({
           </section>
         </div>
 
-        <aside className="evaluation-panel">
+        <aside ref={evaluationPanelRef} className="evaluation-panel">
           <h2>Evaluation preview</h2>
-          <p>Test how this flag would be evaluated for a specific user.</p>
+          <p>Test the exact decision path for one user context.</p>
+          <p className="evaluation-hint">
+            {flag.enabled
+              ? "Rules are checked first. Percentage rollout runs only when no rule matches."
+              : "This flag is globally Off. Evaluation will return Off before checking targeting rules or rollout."}
+          </p>
           <form className="evaluation-form" onSubmit={(event) => void runEvaluation(event)}>
-            <label className="field-label">User key<input value={userKey} onChange={(event) => setUserKey(event.target.value)} required /></label>
-            <label className="field-label">Country<input value={country} onChange={(event) => setCountry(event.target.value)} placeholder="TR" /></label>
-            <label className="field-label">Plan<input value={plan} onChange={(event) => setPlan(event.target.value)} placeholder="premium" /></label>
-            <label className="field-label optional-evaluation-field">Email<input value={email} onChange={(event) => setEmail(event.target.value)} placeholder="user@example.com" /></label>
+            <label className="field-label">User key<input ref={userKeyInputRef} value={userKey} onChange={(event) => { setUserKey(event.target.value); resetEvaluation(); }} placeholder="user-123" required /></label>
+            <label className="field-label">Country<input value={country} onChange={(event) => { setCountry(event.target.value); resetEvaluation(); }} placeholder="TR" /></label>
+            <label className="field-label">Plan<input value={plan} onChange={(event) => { setPlan(event.target.value); resetEvaluation(); }} placeholder="premium" /></label>
+            <label className="field-label optional-evaluation-field">Email<input value={email} onChange={(event) => { setEmail(event.target.value); resetEvaluation(); }} placeholder="user@example.com" /></label>
             <button className="primary-button full-width" type="submit" disabled={evaluating}>{evaluating ? "Evaluating…" : "Run evaluation"}</button>
           </form>
 
-          <div className="evaluation-result">
+          <div className="evaluation-result" aria-live="polite">
             <div className="result-heading"><strong>Result</strong>{evaluation ? <span><StatusDot enabled={evaluation.enabled} /> {evaluation.enabled ? "On" : "Off"}</span> : <span className="muted-cell">Not evaluated</span>}</div>
             {evaluation ? (
               <>
                 <div className={`match-box ${evaluation.enabled ? "positive" : "neutral"}`}>
-                  <strong>{matchedRule ? `Matched rule #${matchedRule.id}` : reasonLabel(evaluation.reason)}</strong>
-                  <code>{matchedRule ? `${attributeLabel(matchedRule.attribute)} ${OPERATOR_LABELS[matchedRule.operator]} ${matchedRule.comparisonValue}` : `bucket ${evaluation.bucket} · rollout ${evaluation.rolloutPercentage}%`}</code>
+                  <strong>{matchedRule && matchedRuleNumber ? `Matched rule #${matchedRuleNumber}` : reasonLabel(evaluation.reason)}</strong>
+                  <code>
+                    {matchedRule
+                      ? `${attributeLabel(matchedRule.attribute)} ${OPERATOR_LABELS[matchedRule.operator]} ${matchedRule.comparisonValue}`
+                      : evaluation.bucket >= 0
+                        ? `bucket ${evaluation.bucket} · rollout ${evaluation.rolloutPercentage}%`
+                        : `rollout ${evaluation.rolloutPercentage}%`}
+                  </code>
                 </div>
-                <small>Evaluated in {evaluationMs ?? 1} ms · {reasonLabel(evaluation.reason)}</small>
+                <p className="evaluation-explanation">{evaluationExplanation(evaluation, matchedRule)}</p>
+                <dl className="evaluation-request-summary">
+                  <dt>User key</dt><dd><code>{userKey.trim()}</code></dd>
+                  <dt>Context</dt><dd>{[country.trim() && `country=${country.trim()}`, plan.trim() && `plan=${plan.trim()}`, email.trim() && `email=${email.trim()}`].filter(Boolean).join(" · ") || "No optional attributes"}</dd>
+                  <dt>Reason</dt><dd>{reasonLabel(evaluation.reason)}</dd>
+                  <dt>Latency</dt><dd>{evaluationMs ?? 1} ms</dd>
+                </dl>
               </>
             ) : null}
           </div>
@@ -277,10 +351,16 @@ export function TargetingPage({
       <Modal open={ruleOpen} title={editingRule ? "Edit targeting rule" : "Add targeting rule"} description="Rules are evaluated in ascending priority order." onClose={() => setRuleOpen(false)}>
         <form className="form-stack" onSubmit={saveRule}>
           <div className="form-grid-2">
-            <label className="field-label">Attribute<select value={ruleAttribute} onChange={(event) => setRuleAttribute(event.target.value as TargetingRule["attribute"])}>{ATTRIBUTES.map((attribute) => <option key={attribute} value={attribute}>{attributeLabel(attribute)}</option>)}</select></label>
-            <label className="field-label">Operator<select value={ruleOperator} onChange={(event) => setRuleOperator(event.target.value as TargetingOperator)}>{OPERATORS.map((operator) => <option key={operator} value={operator}>{OPERATOR_LABELS[operator]}</option>)}</select></label>
+            <label className="field-label">
+              Attribute
+              <SelectMenu value={ruleAttribute} onChange={(value) => setRuleAttribute(value as TargetingRule["attribute"])} options={ATTRIBUTE_OPTIONS} ariaLabel="Targeting attribute" className="field-select" />
+            </label>
+            <label className="field-label">
+              Operator
+              <SelectMenu value={ruleOperator} onChange={(value) => setRuleOperator(value as TargetingOperator)} options={OPERATOR_OPTIONS} ariaLabel="Targeting operator" className="field-select" />
+            </label>
           </div>
-          <label className="field-label">Comparison value<input autoFocus value={ruleValue} onChange={(event) => setRuleValue(event.target.value)} placeholder="premium" required /></label>
+          <label className="field-label">Comparison value<input autoFocus value={ruleValue} onChange={(event) => setRuleValue(event.target.value)} placeholder="Enter comparison value" required /></label>
           <label className="field-label">Priority<input type="number" min={0} value={rulePriority} onChange={(event) => setRulePriority(Number(event.target.value))} /></label>
           <label className="switch-row"><span><strong>Serve enabled</strong><small>Return On when this rule matches.</small></span><input type="checkbox" checked={ruleServe} onChange={(event) => setRuleServe(event.target.checked)} /></label>
           {editingRule ? <p className="form-note">Saving replaces the existing rule because the backend exposes create/delete rule operations.</p> : null}
