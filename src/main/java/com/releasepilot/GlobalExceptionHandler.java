@@ -9,8 +9,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -62,6 +64,24 @@ public class GlobalExceptionHandler {
       HttpMessageNotReadableException exception, HttpServletRequest request) {
     return buildError(
         HttpStatus.BAD_REQUEST, "Gecersiz JSON request body.", request.getRequestURI());
+  }
+
+  @ExceptionHandler(MissingServletRequestParameterException.class)
+  public ResponseEntity<ApiError> handleMissingRequestParameter(
+      MissingServletRequestParameterException exception, HttpServletRequest request) {
+    return buildError(
+        HttpStatus.BAD_REQUEST,
+        "Missing required request parameter: " + exception.getParameterName(),
+        request.getRequestURI());
+  }
+
+  @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+  public ResponseEntity<ApiError> handleRequestParameterTypeMismatch(
+      MethodArgumentTypeMismatchException exception, HttpServletRequest request) {
+    return buildError(
+        HttpStatus.BAD_REQUEST,
+        "Invalid value for request parameter: " + exception.getName(),
+        request.getRequestURI());
   }
 
   private ResponseEntity<ApiError> buildError(HttpStatus status, String message, String path) {
