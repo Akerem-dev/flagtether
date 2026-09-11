@@ -94,6 +94,8 @@ This makes repeated evaluations stable for the same input.
 
 Environment is included in the hash because rollout membership is allowed to differ between environments.
 
+User keys are normalized once by trimming surrounding whitespace, but their case is preserved. `User123` and `user123` are therefore distinct rollout identities. Targeting rules on `userKey` use the same case-sensitive semantics, while `country`, `plan`, and `email` comparisons remain case-insensitive.
+
 ## Why targeting rules run before percentage rollout
 
 Targeting represents an explicit decision.
