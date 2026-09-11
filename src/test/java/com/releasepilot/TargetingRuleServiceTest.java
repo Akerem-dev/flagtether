@@ -47,6 +47,24 @@ class TargetingRuleServiceTest {
   }
 
   @Test
+  void defaultsMissingPriorityToOneHundred() {
+    FeatureFlag flag = new FeatureFlag("checkout-v2", "prod", true, 50);
+    TargetingRule created =
+        new TargetingRule(
+            8L, "checkout-v2", "prod", "country", TargetingOperator.EQUALS, "TR", true, 100);
+
+    when(featureFlagService.getFlagByName("checkout-v2", "prod")).thenReturn(flag);
+    when(repository.insert(any(TargetingRule.class))).thenReturn(created);
+
+    targetingRuleService.create("checkout-v2", "prod", "country", "EQUALS", "TR", true, null);
+
+    ArgumentCaptor<TargetingRule> captor = ArgumentCaptor.forClass(TargetingRule.class);
+    verify(repository).insert(captor.capture());
+
+    assertThat(captor.getValue().getPriority()).isEqualTo(100);
+  }
+
+  @Test
   void rejectsAttributeThatEvaluationEngineCannotRead() {
     FeatureFlag flag = new FeatureFlag("checkout-v2", "prod", true, 50);
     when(featureFlagService.getFlagByName("checkout-v2", "prod")).thenReturn(flag);
