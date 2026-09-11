@@ -50,7 +50,9 @@ public class GlobalExceptionHandler {
             .collect(Collectors.joining("; "));
 
     String message =
-        validationDetails.isBlank() ? "Invalid request body." : "Invalid request: " + validationDetails;
+        validationDetails.isBlank()
+            ? "Invalid request body."
+            : "Invalid request: " + validationDetails;
 
     return buildError(HttpStatus.BAD_REQUEST, message, request.getRequestURI());
   }
