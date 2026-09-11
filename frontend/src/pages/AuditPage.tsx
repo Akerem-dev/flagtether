@@ -25,6 +25,49 @@ function actionLabel(action: string) {
     .join(" ");
 }
 
+function detailValue(details: string, key: string) {
+  const match = details.match(new RegExp(`(?:^|,\\s*)${key}=([^,]+)`));
+  return match?.[1]?.trim() ?? null;
+}
+
+function detailLabel(entry: AuditLogEntry) {
+  const details = entry.details?.trim();
+  if (!details) return actionLabel(entry.action);
+
+  if (entry.action === "FLAG_CREATED") {
+    const enabled = detailValue(details, "enabled");
+    const rollout = detailValue(details, "rolloutPercentage");
+    if (enabled && rollout) return `${enabled === "true" ? "On" : "Off"} · ${rollout}% rollout`;
+  }
+
+  if (entry.action === "FLAG_ROLLOUT_UPDATED") {
+    const from = detailValue(details, "from");
+    const to = detailValue(details, "to");
+    if (from && to) return `${from}% → ${to}%`;
+  }
+
+  if (entry.action === "FLAG_ENABLED_UPDATED") {
+    const from = detailValue(details, "from");
+    const to = detailValue(details, "to");
+    if (from && to) return `${from === "true" ? "On" : "Off"} → ${to === "true" ? "On" : "Off"}`;
+  }
+
+  if (entry.action === "RULE_CREATED") {
+    const attribute = detailValue(details, "attribute");
+    const operator = detailValue(details, "operator")?.toLowerCase().replaceAll("_", " ");
+    const value = detailValue(details, "value");
+    const serveEnabled = detailValue(details, "serveEnabled");
+    const priority = detailValue(details, "priority");
+    if (attribute && operator && value) {
+      const serve = serveEnabled ? ` · serve ${serveEnabled === "true" ? "On" : "Off"}` : "";
+      const order = priority ? ` · priority ${priority}` : "";
+      return `${attribute} ${operator} ${value}${serve}${order}`;
+    }
+  }
+
+  return details;
+}
+
 function dateKey(value: string) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "Unknown";
@@ -110,7 +153,7 @@ export function AuditPage({
       if (actionFilter !== "all" && entry.action !== actionFilter) return false;
       if (flagFilter !== "all" && entry.flagName !== flagFilter) return false;
       if (!query) return true;
-      return `${entry.flagName} ${entry.action} ${entry.details} ${entry.environment}`.toLowerCase().includes(query);
+      return `${entry.flagName} ${entry.action} ${entry.details} ${detailLabel(entry)} ${entry.environment}`.toLowerCase().includes(query);
     });
     return result.sort((a, b) => {
       const difference = new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
@@ -195,10 +238,10 @@ export function AuditPage({
                   ...group.map((entry) => (
                     <tr key={entry.id}>
                       <td className="muted-cell time-cell">{timeLabel(entry.createdAt)}</td>
-                      <td className="audit-event-cell"><strong>{entry.flagName}</strong><span>{entry.details || actionLabel(entry.action)}</span></td>
+                      <td className="audit-event-cell"><strong>{entry.flagName}</strong><span title={entry.details}>{detailLabel(entry)}</span></td>
                       <td><span className="environment-cell"><span className={`environment-dot ${entry.environment as Environment}`} />{ENVIRONMENT_LABELS[entry.environment as Environment] ?? entry.environment}</span></td>
                       <td className="muted-cell">{actionLabel(entry.action)}</td>
-                      <td className="actions-col"><button type="button" className="icon-button" onClick={() => void navigator.clipboard.writeText(`${entry.flagName}: ${entry.details}`)} aria-label="Copy audit event"><Icon name="copy" size={16} /></button></td>
+                      <td className="actions-col"><button type="button" className="icon-button" onClick={() => void navigator.clipboard.writeText(`${entry.flagName}: ${entry.details}`)} aria-label="Copy raw audit event" title="Copy raw audit event"><Icon name="copy" size={16} /></button></td>
                     </tr>
                   )),
                 ];
