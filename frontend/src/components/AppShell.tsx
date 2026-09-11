@@ -62,11 +62,10 @@ export function AppShell() {
 
         <div className="sidebar-section sidebar-project-section">
           <span className="sidebar-section-label">Project</span>
-          <button className="project-switcher" type="button" title="Current project: releasepilot-api">
+          <div className="project-switcher" title="Current project: flagtether-api" aria-label="Current project: flagtether-api">
             <Icon name="project" size={18} />
-            <span>releasepilot-api</span>
-            <Icon name="chevron-down" size={15} className="project-chevron" />
-          </button>
+            <span>flagtether-api</span>
+          </div>
         </div>
 
         <nav className="sidebar-nav" aria-label="Primary navigation">
