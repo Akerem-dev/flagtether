@@ -62,9 +62,9 @@ export function AppShell() {
 
         <div className="sidebar-section sidebar-project-section">
           <span className="sidebar-section-label">Project</span>
-          <button className="project-switcher" type="button" title="Current project: flagtether-api">
+          <button className="project-switcher" type="button" title="Current project: releasepilot-api">
             <Icon name="project" size={18} />
-            <span>flagtether-api</span>
+            <span>releasepilot-api</span>
             <Icon name="chevron-down" size={15} className="project-chevron" />
           </button>
         </div>
@@ -103,7 +103,7 @@ export function AppShell() {
         </nav>
 
         <div className="sidebar-footer">
-          <a className="sidebar-footer-link" href="http://localhost:8080/swagger-ui.html" target="_blank" rel="noreferrer" title="Docs">
+          <a className="sidebar-footer-link" href="/swagger-ui.html" target="_blank" rel="noreferrer" title="Docs">
             <Icon name="docs" size={18} />
             <span>Docs</span>
             <Icon name="external-link" size={14} className="external-icon" />
