@@ -3,28 +3,25 @@ package com.releasepilot;
 import java.util.List;
 import java.util.Locale;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class TargetingRuleService {
 
   private final TargetingRuleRepository repository;
-
   private final FeatureFlagService featureFlagService;
-
   private final AuditLogService auditLogService;
 
   public TargetingRuleService(
       TargetingRuleRepository repository,
       FeatureFlagService featureFlagService,
       AuditLogService auditLogService) {
-
     this.repository = repository;
-
     this.featureFlagService = featureFlagService;
-
     this.auditLogService = auditLogService;
   }
 
+  @Transactional
   public TargetingRule create(
       String flagName,
       String environment,
@@ -33,11 +30,8 @@ public class TargetingRuleService {
       String comparisonValue,
       boolean serveEnabled,
       Integer priority) {
-
     FeatureFlag flag = featureFlagService.getFlagByName(flagName, environment);
-
     TargetingOperator parsedOperator = parseOperator(operator);
-
     int actualPriority = priority == null ? 100 : priority;
 
     TargetingRule rule =
@@ -74,20 +68,16 @@ public class TargetingRuleService {
   }
 
   public List<TargetingRule> getRules(String flagName, String environment) {
-
     FeatureFlag flag = featureFlagService.getFlagByName(flagName, environment);
-
     return repository.findAll(flag.getName(), flag.getEnvironment());
   }
 
+  @Transactional
   public void delete(long ruleId, String flagName, String environment) {
-
     FeatureFlag flag = featureFlagService.getFlagByName(flagName, environment);
-
     boolean deleted = repository.delete(ruleId, flag.getName(), flag.getEnvironment());
 
     if (!deleted) {
-
       throw new TargetingRuleNotFoundException(ruleId);
     }
 
@@ -96,18 +86,13 @@ public class TargetingRuleService {
   }
 
   private TargetingOperator parseOperator(String operator) {
-
     if (operator == null || operator.isBlank()) {
-
       throw new IllegalArgumentException("Targeting operator bos olamaz.");
     }
 
     try {
-
       return TargetingOperator.valueOf(operator.trim().toUpperCase(Locale.ROOT));
-
     } catch (IllegalArgumentException exception) {
-
       throw new IllegalArgumentException(
           "Operator EQUALS, NOT_EQUALS, CONTAINS, STARTS_WITH veya ENDS_WITH olmalidir.");
     }
