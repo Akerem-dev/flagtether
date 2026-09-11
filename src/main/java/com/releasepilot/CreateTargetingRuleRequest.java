@@ -22,7 +22,6 @@ public class CreateTargetingRuleRequest {
   @NotNull(message = "is required")
   private Boolean serveEnabled;
 
-  @NotNull(message = "is required")
   @Min(value = 0, message = "must be greater than or equal to 0")
   private Integer priority;
 
