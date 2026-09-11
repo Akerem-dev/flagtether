@@ -140,10 +140,7 @@ public class FeatureFlagService {
 
     repository.deleteByName(name, normalizedEnvironment);
     auditLogService.record(
-        AuditAction.FLAG_DELETED,
-        flag.getName(),
-        flag.getEnvironment(),
-        "Feature flag deleted");
+        AuditAction.FLAG_DELETED, flag.getName(), flag.getEnvironment(), "Feature flag deleted");
   }
 
   private FeatureFlag getExistingFlagOrThrow(String name, String environment) {
