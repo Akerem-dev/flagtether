@@ -86,8 +86,7 @@ public class FeatureFlagService {
       flag.disable();
     }
 
-    boolean updated =
-        repository.updateEnabled(name, normalizedEnvironment, flag.isEnabled());
+    boolean updated = repository.updateEnabled(name, normalizedEnvironment, flag.isEnabled());
     if (!updated) {
       throw new FeatureFlagNotFoundException(name);
     }
