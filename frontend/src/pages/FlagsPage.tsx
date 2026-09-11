@@ -13,6 +13,7 @@ import { Modal } from "../components/Modal";
 import { PageHeader, StatusDot } from "../components/PageChrome";
 import { RolloutControl } from "../components/RolloutControl";
 import { SelectMenu, type SelectMenuOption } from "../components/SelectMenu";
+import { useToast } from "../components/Toast";
 import type { AuditLogEntry, Environment, FeatureFlag } from "../types";
 
 type StatusFilter = "all" | "on" | "off";
@@ -60,6 +61,7 @@ export function FlagsPage({
   onEnvironmentChange: (value: Environment) => void;
 }) {
   const navigate = useNavigate();
+  const { notify } = useToast();
   const [flags, setFlags] = useState<FeatureFlag[]>([]);
   const [meta, setMeta] = useState<Record<string, FlagMeta>>({});
   const [loading, setLoading] = useState(true);
@@ -75,6 +77,7 @@ export function FlagsPage({
   const [enabled, setEnabled] = useState(false);
   const [rollout, setRollout] = useState(0);
   const [busyName, setBusyName] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<FeatureFlag | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -144,6 +147,7 @@ export function FlagsPage({
       setName("");
       setEnabled(false);
       setRollout(0);
+      notify({ title: "Flag created", message: `${trimmed} is ready in ${environment}.` });
       await load();
     } catch (createError) {
       setError(createError instanceof Error ? createError.message : "Could not create flag.");
@@ -159,6 +163,10 @@ export function FlagsPage({
     try {
       const updated = await setFeatureFlagEnabled(environment, flag.name, !flag.enabled);
       setFlags((current) => current.map((item) => (item.name === updated.name ? updated : item)));
+      notify({
+        title: updated.enabled ? "Flag enabled" : "Flag disabled",
+        message: `${updated.name} is now ${updated.enabled ? "On" : "Off"} in ${environment}.`,
+      });
     } catch (toggleError) {
       setError(toggleError instanceof Error ? toggleError.message : "Could not update flag.");
     } finally {
@@ -166,14 +174,16 @@ export function FlagsPage({
     }
   }
 
-  async function removeFlag(flag: FeatureFlag, event: MouseEvent) {
-    event.stopPropagation();
-    if (!window.confirm(`Delete ${flag.name} from ${environment}?`)) return;
-    setBusyName(flag.name);
+  async function confirmDelete() {
+    if (!deleteTarget) return;
+    const target = deleteTarget;
+    setBusyName(target.name);
     setError(null);
     try {
-      await deleteFeatureFlag(environment, flag.name);
-      setFlags((current) => current.filter((item) => item.name !== flag.name));
+      await deleteFeatureFlag(environment, target.name);
+      setFlags((current) => current.filter((item) => item.name !== target.name));
+      setDeleteTarget(null);
+      notify({ title: "Flag deleted", message: `${target.name} was removed from ${environment}.` });
     } catch (deleteError) {
       setError(deleteError instanceof Error ? deleteError.message : "Could not delete flag.");
     } finally {
@@ -266,7 +276,7 @@ export function FlagsPage({
                       <summary aria-label={`Actions for ${flag.name}`}><Icon name="more-horizontal" size={17} /></summary>
                       <div className="row-menu-popover">
                         <button type="button" onClick={() => navigate(`/flags/${encodeURIComponent(flag.name)}`)}>View details</button>
-                        <button className="danger-action" type="button" onClick={(event) => void removeFlag(flag, event)}>Delete</button>
+                        <button className="danger-action" type="button" onClick={() => setDeleteTarget(flag)}>Delete</button>
                       </div>
                     </details>
                   </td>
@@ -284,13 +294,28 @@ export function FlagsPage({
             <input autoFocus value={name} onChange={(event) => setName(event.target.value)} placeholder="Enter flag key" required />
             <small className="field-caption">Use lowercase words separated by hyphens, for example <code>new-checkout</code>.</small>
           </label>
-          <RolloutControl value={rollout} onChange={setRollout} label="Initial rollout" />
+          <RolloutControl value={rollout} onChange={setRollout} label="Default rollout" />
           <label className="checkbox-setting">
             <input type="checkbox" checked={enabled} onChange={(event) => setEnabled(event.target.checked)} />
             <span><strong>Start enabled</strong><small>Serve this flag as soon as it is created.</small></span>
           </label>
-          <div className="dialog-actions"><button type="button" className="secondary-button" onClick={() => setCreateOpen(false)}>Cancel</button><button type="submit" className="primary-button" disabled={creating}>{creating ? "Creating…" : "Create flag"}</button></div>
+          <div className="dialog-actions"><button type="button" className="secondary-button" onClick={() => setCreateOpen(false)}>Cancel</button><button type="submit" className={`primary-button ${creating ? "busy-button" : ""}`} aria-busy={creating} disabled={creating}>{creating ? "Creating…" : "Create flag"}</button></div>
         </form>
+      </Modal>
+
+      <Modal
+        open={Boolean(deleteTarget)}
+        title={deleteTarget ? `Delete ${deleteTarget.name}?` : "Delete flag?"}
+        description="This action cannot be undone."
+        onClose={() => {
+          if (!busyName) setDeleteTarget(null);
+        }}
+      >
+        <p className="confirm-copy">The flag will be removed from <strong>{environment}</strong> together with its current configuration.</p>
+        <div className="dialog-actions">
+          <button className="secondary-button" type="button" onClick={() => setDeleteTarget(null)} disabled={Boolean(busyName)}>Cancel</button>
+          <button className={`danger-button ${busyName ? "busy-button" : ""}`} type="button" onClick={() => void confirmDelete()} aria-busy={Boolean(busyName)} disabled={Boolean(busyName)}>{busyName ? "Deleting…" : "Delete flag"}</button>
+        </div>
       </Modal>
     </div>
   );
