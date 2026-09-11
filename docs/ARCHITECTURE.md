@@ -117,6 +117,8 @@ Only a user that matches no rule reaches percentage evaluation.
 
 Lower numeric priority values execute first.
 
+Priority is optional when a rule is created. If the request omits it, the service assigns a default priority of `100` before persistence.
+
 The repository query orders rules by:
 
 ```text
@@ -130,17 +132,41 @@ The rule ID provides deterministic ordering when two rules have the same priorit
 The project relies on relational constraints and explicit querying for:
 
 - unique flag/environment configuration;
-- targeting rule ordering;
+- valid rollout and environment values;
+- supported targeting attributes and operators;
+- targeting rule ordering and referential integrity;
+- nonblank persisted domain values;
 - audit history;
 - migration history.
 
 PostgreSQL is used in development and integration testing so database behavior does not depend on differences between production SQL and an in-memory substitute.
+
+## Database integrity
+
+Validation at the HTTP boundary protects normal API usage, but it is not the only integrity layer.
+
+Flyway migrations also enforce important domain rules in PostgreSQL. The current schema prevents, among other invalid states:
+
+- rollout percentages outside `0` to `100`;
+- unsupported environments;
+- duplicate `(name, environment)` feature-flag identities;
+- targeting rules that reference a missing feature flag;
+- unsupported targeting operators;
+- negative targeting priority values;
+- unsupported targeting attributes outside `userkey`, `country`, `plan`, and `email`;
+- blank feature-flag names and blank targeting comparison values.
+
+This matters because direct SQL, future maintenance scripts, or another application process can bypass controller validation. Keeping critical invariants in PostgreSQL prevents persisted state that the evaluation engine cannot interpret correctly.
+
+New integrity rules are added through new Flyway migrations rather than editing migrations that may already have been applied, preserving Flyway checksum history for existing installations.
 
 ## Why Testcontainers instead of H2
 
 The integration test starts an actual PostgreSQL container.
 
 This choice avoids relying on H2 behavior for PostgreSQL-specific SQL, constraints, migrations, and JDBC behavior.
+
+The integration suite also exercises migration application, transactional rollback, and database-level constraint failures against PostgreSQL itself.
 
 The trade-off is that integration tests require Docker and take longer than pure unit tests.
 
@@ -198,6 +224,8 @@ Application runtime access and schema migration responsibilities are separate in
 
 Flyway records applied migrations in `flyway_schema_history`.
 
+The included Docker Compose files intentionally favor a simpler demonstration setup and use the configured PostgreSQL application role for both runtime access and Flyway. A hardened deployment should provision separate runtime and migration credentials with the minimum permissions required by each role.
+
 ## Audit behavior
 
 Audit entries are append-oriented records describing configuration changes.
@@ -225,7 +253,9 @@ Invalid arguments
 → 400 Bad Request
 ```
 
-The intent is to keep repetitive HTTP error mapping out of individual controllers.
+Request-body validation, missing required query parameters, and query-parameter type mismatches also use the application's structured error response rather than falling through to unrelated default error shapes.
+
+The intent is to keep repetitive HTTP error mapping out of individual controllers and give API consumers a predictable contract.
 
 ## Current boundaries
 
