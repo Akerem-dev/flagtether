@@ -33,6 +33,12 @@ function readableAction(action: string) {
     .join(" ");
 }
 
+function environmentLabel(environment: Environment) {
+  if (environment === "prod") return "Production";
+  if (environment === "staging") return "Staging";
+  return "Development";
+}
+
 export function FlagOverviewPage({
   environment,
   onEnvironmentChange,
@@ -85,6 +91,7 @@ export function FlagOverviewPage({
 
   const lastActivity = activity[0];
   const keyFormat = useMemo(() => (/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(name) ? "kebab-case" : "custom"), [name]);
+  const environmentName = environmentLabel(environment);
 
   async function saveEdit() {
     if (!flag) return;
@@ -131,7 +138,7 @@ export function FlagOverviewPage({
   }
 
   return (
-    <div className="page detail-page">
+    <div className="page detail-page overview-page">
       <PageHeader
         title={
           <span className="detail-title-row">
@@ -141,15 +148,23 @@ export function FlagOverviewPage({
             </button>
           </span>
         }
-        subtitle={<><code>{flag.name}</code><span className="detail-subtitle-copy">Environment-scoped feature flag.</span></>}
+        subtitle={
+          <span className="overview-summary">
+            <span>{environmentName}</span>
+            <span aria-hidden="true">·</span>
+            <span>{flag.rolloutPercentage}% default rollout</span>
+            <span aria-hidden="true">·</span>
+            <span>{rules.length} {rules.length === 1 ? "targeting rule" : "targeting rules"}</span>
+          </span>
+        }
         environment={environment}
         onEnvironmentChange={(value) => {
           onEnvironmentChange(value);
           navigate(`/flags/${encodeURIComponent(name)}`);
         }}
       >
-        <button className="primary-button" type="button" onClick={() => setEditOpen(true)}><Icon name="edit" size={17} /> Edit flag</button>
-        <button className="secondary-button" type="button" onClick={() => navigate(`/flags/${encodeURIComponent(name)}/targeting`)}><Icon name="evaluation" size={17} /> Test evaluation</button>
+        <button className="secondary-button" type="button" onClick={() => setEditOpen(true)}><Icon name="edit" size={16} /> Edit flag</button>
+        <button className="secondary-button" type="button" onClick={() => navigate(`/flags/${encodeURIComponent(name)}/targeting`)}><Icon name="evaluation" size={16} /> Evaluate</button>
       </PageHeader>
 
       <div className="breadcrumb-line"><Link to="/flags"><Icon name="arrow-left" size={16} /> Feature flags</Link><span>/</span><span>{flag.name}</span></div>
@@ -163,46 +178,51 @@ export function FlagOverviewPage({
 
       {error ? <div className="inline-alert" role="alert">{error}<button type="button" onClick={() => setError(null)} aria-label="Dismiss"><Icon name="close" size={16} /></button></div> : null}
 
-      <section className="detail-section">
-        <h2>Details</h2>
-        <div className="property-grid">
+      <section className="detail-section overview-section">
+        <h2>Configuration</h2>
+        <div className="property-grid overview-property-grid">
           <dl>
-            <div><dt>Key</dt><dd><code>{flag.name}</code> <button className="copy-inline" type="button" onClick={() => void navigator.clipboard.writeText(flag.name)} aria-label="Copy flag key"><Icon name="copy" size={16} /></button></dd></div>
-            <div><dt>Environment</dt><dd>{environment === "prod" ? "Production" : environment === "staging" ? "Staging" : "Development"}</dd></div>
+            <div><dt>Flag key</dt><dd><code>{flag.name}</code> <button className="copy-inline" type="button" onClick={() => void navigator.clipboard.writeText(flag.name)} aria-label="Copy flag key"><Icon name="copy" size={15} /></button></dd></div>
+            <div><dt>Environment</dt><dd>{environmentName}</dd></div>
             <div><dt>State</dt><dd><StatusDot enabled={flag.enabled} /> {flag.enabled ? "On" : "Off"}</dd></div>
           </dl>
           <dl>
-            <div><dt>Rollout</dt><dd>{flag.rolloutPercentage}%</dd></div>
+            <div><dt>Default rollout</dt><dd>{flag.rolloutPercentage}%</dd></div>
             <div><dt>Targeting rules</dt><dd><Link to={`/flags/${encodeURIComponent(name)}/targeting`}>{rules.length} {rules.length === 1 ? "rule" : "rules"}</Link></dd></div>
             <div><dt>Last activity</dt><dd>{relative(lastActivity?.createdAt)}</dd></div>
           </dl>
         </div>
       </section>
 
-      <section className="detail-section">
-        <h2>Evaluation</h2>
-        <div className="property-grid">
-          <dl>
-            <div><dt>Strategy</dt><dd>Deterministic</dd></div>
-            <div><dt>Rollout</dt><dd>{flag.rolloutPercentage}%</dd></div>
-            <div><dt>Targeting</dt><dd>{rules.length} {rules.length === 1 ? "rule" : "rules"}</dd></div>
-          </dl>
-          <dl>
-            <div><dt>Environment</dt><dd>{environment === "prod" ? "Production" : environment === "staging" ? "Staging" : "Development"}</dd></div>
-            <div><dt>Context fields</dt><dd>User + attributes</dd></div>
-            <div>
-              <dt>Key format</dt>
-              <dd className="key-format-value">
-                <code>{keyFormat}</code>
-                <small>{keyFormat === "kebab-case" ? "lowercase words separated by hyphens" : "custom naming pattern"}</small>
-              </dd>
-            </div>
-          </dl>
+      <section className="detail-section overview-section delivery-section">
+        <h2>Delivery behavior</h2>
+        <p className="section-description">How this flag is evaluated after its global state is checked.</p>
+        <div className="behavior-list">
+          <div className="behavior-row">
+            <span className="behavior-index">1</span>
+            <div><strong>Targeting rules</strong><small>Rules are evaluated in priority order. The first matching rule wins.</small></div>
+            <span className="behavior-value">{rules.length} configured</span>
+          </div>
+          <div className="behavior-row">
+            <span className="behavior-index">2</span>
+            <div><strong>Deterministic rollout</strong><small>Users who do not match a rule are bucketed consistently by user key.</small></div>
+            <span className="behavior-value">{flag.rolloutPercentage}% On</span>
+          </div>
+          <div className="behavior-row">
+            <span className="behavior-index">3</span>
+            <div><strong>Evaluation context</strong><small>Targeting can use user key and optional attributes such as country, plan, and email.</small></div>
+            <span className="behavior-value">User + attributes</span>
+          </div>
+        </div>
+        <div className="key-format-line">
+          <span>Key format</span>
+          <code>{keyFormat}</code>
+          <small>{keyFormat === "kebab-case" ? "lowercase words separated by hyphens, for example checkout-v2" : "custom naming pattern"}</small>
         </div>
       </section>
 
-      <section className="detail-section recent-section">
-        <div className="section-heading-row"><h2>Recent activity</h2><Link to={`/audit?flag=${encodeURIComponent(name)}&environment=${environment}`}>View full history <Icon name="chevron-right" size={16} /></Link></div>
+      <section className="detail-section recent-section overview-section">
+        <div className="section-heading-row"><h2>Recent activity</h2><Link to={`/audit?flag=${encodeURIComponent(name)}&environment=${environment}`}>View full history <Icon name="chevron-right" size={15} /></Link></div>
         <div className="table-shell compact-table-shell">
           <div className="table-scroll">
             <table className="data-table compact-table">
@@ -217,10 +237,18 @@ export function FlagOverviewPage({
         </div>
       </section>
 
-      <Modal open={editOpen} title={`Edit ${flag.name}`} description={`Update the ${environment} configuration.`} onClose={() => setEditOpen(false)}>
+      <Modal open={editOpen} title={`Edit ${flag.name}`} description={`Update the ${environmentName.toLowerCase()} configuration.`} onClose={() => setEditOpen(false)}>
         <div className="form-stack">
-          <RolloutControl value={editRollout} onChange={setEditRollout} label="Rollout" />
-          <label className="switch-row"><span><strong>Enabled</strong><small>Serve the flag in this environment.</small></span><input type="checkbox" checked={editEnabled} onChange={(event) => setEditEnabled(event.target.checked)} /></label>
+          <RolloutControl
+            value={editRollout}
+            onChange={setEditRollout}
+            label="Default rollout"
+            caption="Percentage of users who receive On when no targeting rule matches."
+          />
+          <label className="checkbox-setting">
+            <input type="checkbox" checked={editEnabled} onChange={(event) => setEditEnabled(event.target.checked)} />
+            <span><strong>Enabled</strong><small>Serve this flag in {environmentName.toLowerCase()}.</small></span>
+          </label>
           <div className="dialog-actions"><button className="secondary-button" type="button" onClick={() => setEditOpen(false)}>Cancel</button><button className="primary-button" type="button" onClick={() => void saveEdit()} disabled={saving}>{saving ? "Saving…" : "Save changes"}</button></div>
         </div>
       </Modal>
