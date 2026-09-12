@@ -1,12 +1,12 @@
-# ReleasePilot
+# FlagTether
 
-ReleasePilot is a self-hosted feature-management platform for controlling how features are exposed across development, staging, and production environments.
+FlagTether is a self-hosted feature-management platform for controlling how features are exposed across development, staging, and production environments.
 
 The repository contains a Spring Boot/PostgreSQL backend plus **FlagTether**, a responsive React administration console. Together they demonstrate the core engineering behind a modern feature-management system: deterministic rollouts, targeting rules, environment isolation, audit history, API design, database migrations, operational tooling, and containerized deployment.
 
 ## Product surfaces
 
-FlagTether provides a focused developer-tool UI for operating ReleasePilot:
+FlagTether provides a focused developer-tool UI for managing feature flags:
 
 - feature-flag list with environment switching, filtering, sorting, and creation;
 - flag overview with state and rollout controls;
@@ -17,7 +17,7 @@ FlagTether provides a focused developer-tool UI for operating ReleasePilot:
 - responsive desktop, tablet, and mobile layouts;
 - accessible loading, confirmation, toast, and error states.
 
-The frontend intentionally uses the **FlagTether** product name while the backend service, repository, Java packages, and API remain **ReleasePilot**.
+
 
 ## Engineering highlights
 
@@ -47,8 +47,8 @@ Frontend validation includes ESLint plus a TypeScript/Vite production build in C
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/Akerem-dev/releasepilot.git
-cd releasepilot
+git clone https://github.com/Akerem-dev/flagtether.git
+cd flagtether
 ```
 
 ### 2. Start PostgreSQL and the backend
@@ -121,7 +121,7 @@ VITE_API_BASE_URL=https://your-api.example.com
 
 ## Production-like full stack
 
-A separate Compose file builds the React application into an Nginx image and keeps PostgreSQL and the Spring Boot API internal to the Docker network. Nginx serves the SPA and reverse-proxies `/api`, Swagger UI, and OpenAPI routes to ReleasePilot.
+A separate Compose file builds the React application into an Nginx image and keeps PostgreSQL and the Spring Boot API internal to the Docker network. Nginx serves the SPA and reverse-proxies `/api`, Swagger UI, and OpenAPI routes to FlagTether.
 
 Create `.env` as described above, then run:
 
@@ -240,7 +240,7 @@ STARTS_WITH
 ENDS_WITH
 ```
 
-Rules are evaluated in ascending priority order. Priority is optional when creating a rule; when it is omitted, ReleasePilot assigns `100`. Lower numeric values run first, and the rule ID provides deterministic ordering when priorities are equal. If no rule matches, evaluation falls back to percentage rollout.
+Rules are evaluated in ascending priority order. Priority is optional when creating a rule; when it is omitted, FlagTether assigns `100`. Lower numeric values run first, and the rule ID provides deterministic ordering when priorities are equal. If no rule matches, evaluation falls back to percentage rollout.
 
 ## Environments
 
@@ -267,7 +267,7 @@ FlagTether / Nginx
   +---- /api, Swagger, OpenAPI
              |
              v
-       ReleasePilot API
+       FlagTether API
              |
              v
      Spring MVC Controller
@@ -291,7 +291,7 @@ Database schema changes are managed through Flyway. Core invariants are also enf
 ## Repository layout
 
 ```text
-releasepilot/
+flagtether/
 ├── frontend/
 │   ├── public/
 │   ├── src/
@@ -301,9 +301,9 @@ releasepilot/
 │   └── vite.config.ts
 ├── src/
 │   ├── main/
-│   │   ├── java/com/releasepilot/
+│   │   ├── java/com/flagtether/
 │   │   └── resources/db/migration/
-│   └── test/java/com/releasepilot/
+│   └── test/java/com/flagtether/
 ├── .github/workflows/
 ├── Dockerfile
 ├── compose.yaml
@@ -350,8 +350,8 @@ Requirements:
 PowerShell example:
 
 ```powershell
-$env:RELEASEPILOT_DB_PASSWORD = "your-application-password"
-$env:RELEASEPILOT_DB_MIGRATION_PASSWORD = "your-migration-password"
+$env:FLAGTETHER_DB_PASSWORD = "your-application-password"
+$env:FLAGTETHER_DB_MIGRATION_PASSWORD = "your-migration-password"
 
 mvn spring-boot:run
 ```
@@ -412,4 +412,4 @@ Do not commit credentials, tokens, `.env` files, or production secrets. Security
 
 ## Status
 
-The ReleasePilot backend and FlagTether administration frontend are implemented and continuously validated in CI. A production-like Docker topology is included for full-stack demonstration. The next major quality milestones are browser-level end-to-end coverage and authentication / authorization.
+FlagTether includes a Spring Boot backend and React administration frontend that are continuously validated in CI. A production-like Docker topology is included for full-stack demonstration. The next major quality milestones are browser-level end-to-end coverage and authentication / authorization.

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, NavLink, Outlet } from "react-router-dom";
 import { Icon } from "./Icon";
 
-const githubUrl = "https://github.com/Akerem-dev/releasepilot";
+const githubUrl = "https://github.com/Akerem-dev/flagtether";
 
 export function AppShell() {
   const [mobileOpen, setMobileOpen] = useState(false);

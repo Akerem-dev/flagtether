@@ -14,11 +14,11 @@
         <relativePath/>
     </parent>
 
-    <groupId>com.releasepilot</groupId>
-    <artifactId>releasepilot</artifactId>
+    <groupId>com.flagtether</groupId>
+    <artifactId>flagtether</artifactId>
     <version>0.1.0-SNAPSHOT</version>
 
-    <name>releasepilot</name>
+    <name>flagtether</name>
     <description>Feature flag and release management platform</description>
 
     <properties>

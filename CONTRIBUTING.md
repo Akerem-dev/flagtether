@@ -1,6 +1,6 @@
 # Contributing
 
-ReleasePilot is currently maintained as a portfolio and learning project, but changes should still follow a reviewable development process.
+FlagTether is currently maintained as a portfolio and learning project, but changes should still follow a reviewable development process.
 
 ## Development setup
 

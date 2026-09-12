@@ -92,7 +92,7 @@ export function ApiPage({ environment }: { environment: Environment }) {
 
   return (
     <div className="page api-page">
-      <PageHeader title="API" subtitle="Inspect and test the ReleasePilot API.">
+      <PageHeader title="API" subtitle="Inspect and test the FlagTether API.">
         <div className="base-url-card"><span>Base URL</span><code>{API_BASE_URL}/api</code><button type="button" onClick={() => void navigator.clipboard.writeText(`${API_BASE_URL}/api`)} aria-label="Copy base URL"><Icon name="copy" size={16} /></button></div>
         <div className="api-health"><span className={`status-dot ${healthy ? "on" : healthy === false ? "error" : "off"}`} /><span><strong>{healthy === null ? "Checking API" : healthy ? "API healthy" : "API unavailable"}</strong><small>{lastChecked ? `Checked ${lastChecked.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}` : ""}</small></span></div>
       </PageHeader>
@@ -124,12 +124,12 @@ export function ApiPage({ environment }: { environment: Environment }) {
               <section><h3>Request</h3><div className="request-url"><code>{current.method}</code><code>{requestUrl}</code></div><p className="code-label">Request body</p><pre className="code-panel">{current.request ?? (current.method === "GET" ? "No request body." : "Select Swagger for the full schema.")}</pre><div className="field-notes"><h3>Field notes</h3><dl><div><dt><code>name</code></dt><dd>Unique feature flag key.</dd></div><div><dt><code>enabled</code></dt><dd>Initial on/off state.</dd></div><div><dt><code>rolloutPercentage</code></dt><dd>Percentage of users to serve (0–100).</dd></div></dl></div></section>
               <section><div className="response-heading"><h3>Response</h3><span><span className="status-dot on" /> {current.method === "POST" ? "201 Created" : "200 OK"}</span></div><pre className="code-panel response-panel">{current.response ?? `{
   "status": "See Swagger for the endpoint schema"
-}`}</pre><p className="response-note">Environment-scoped resource returned by ReleasePilot.</p></section>
+}`}</pre><p className="response-note">Environment-scoped resource returned by FlagTether.</p></section>
             </div>
           </section>
         </div>
       ) : tab === "schema" ? (
-        <section className="api-static-section"><h2>Core schema</h2><p>ReleasePilot keeps the public model compact and environment-scoped.</p><div className="schema-grid"><div><h3>FeatureFlag</h3><pre className="code-panel">{`{
+        <section className="api-static-section"><h2>Core schema</h2><p>FlagTether keeps the public model compact and environment-scoped.</p><div className="schema-grid"><div><h3>FeatureFlag</h3><pre className="code-panel">{`{
   name: string
   environment: string
   enabled: boolean
