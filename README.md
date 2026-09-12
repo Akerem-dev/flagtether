@@ -6,7 +6,7 @@ A self-hosted feature-management platform for safely controlling feature exposur
 
 FlagTether combines environment-scoped feature flags, deterministic percentage rollouts, targeting rules, audit history, API tooling, and a production-like Nginx + Docker Compose deployment in one full-stack portfolio project.
 
-<!-- HERO SCREENSHOT: add docs/images/flagtether-dashboard.png here -->
+![FlagTether feature management dashboard](docs/images/flagtether-dashboard.png)
 
 ## Highlights
 
@@ -32,8 +32,13 @@ FlagTether provides a focused developer-tool UI for managing feature flags:
 - responsive desktop, tablet, and mobile layouts;
 - accessible loading, confirmation, toast, and error states.
 
-<!-- OPTIONAL SCREENSHOT: add docs/images/flagtether-targeting.png here -->
-<!-- OPTIONAL SCREENSHOT: add docs/images/flagtether-audit.png here -->
+### Targeting and evaluation
+
+![FlagTether targeting rules and evaluation](docs/images/flagtether-targeting.png)
+
+### Audit history
+
+![FlagTether audit history](docs/images/flagtether-audit.png)
 
 ## Engineering highlights
 
