@@ -1,8 +1,23 @@
 # FlagTether
 
-FlagTether is a self-hosted feature-management platform for controlling how features are exposed across development, staging, and production environments.
+A self-hosted feature-management platform for safely controlling feature exposure across development, staging, and production environments.
 
-The repository contains a Spring Boot/PostgreSQL backend plus **FlagTether**, a responsive React administration console. Together they demonstrate the core engineering behind a modern feature-management system: deterministic rollouts, targeting rules, environment isolation, audit history, API design, database migrations, operational tooling, and containerized deployment.
+**Java 21 · Spring Boot · PostgreSQL · React · TypeScript · Docker · Flyway · Testcontainers**
+
+FlagTether combines environment-scoped feature flags, deterministic percentage rollouts, targeting rules, audit history, API tooling, and a production-like Nginx + Docker Compose deployment in one full-stack portfolio project.
+
+<!-- HERO SCREENSHOT: add docs/images/flagtether-dashboard.png here -->
+
+## Highlights
+
+- deterministic SHA-256 based percentage rollouts;
+- priority-based targeting rules evaluated before rollout;
+- independent `dev`, `staging`, and `prod` configuration;
+- transaction-safe configuration changes with audit logging;
+- PostgreSQL persistence with Flyway-managed domain constraints;
+- real PostgreSQL integration testing through Testcontainers;
+- React/TypeScript administration console with API Explorer and audit views;
+- production-like same-origin deployment through Nginx and Docker Compose.
 
 ## Product surfaces
 
@@ -17,7 +32,8 @@ FlagTether provides a focused developer-tool UI for managing feature flags:
 - responsive desktop, tablet, and mobile layouts;
 - accessible loading, confirmation, toast, and error states.
 
-
+<!-- OPTIONAL SCREENSHOT: add docs/images/flagtether-targeting.png here -->
+<!-- OPTIONAL SCREENSHOT: add docs/images/flagtether-audit.png here -->
 
 ## Engineering highlights
 
@@ -380,9 +396,11 @@ GET /api/audit?limit=50
 
 Audit history is intended for configuration traceability; it is not a complete security event log.
 
-## Design decisions
+## Engineering decisions and trade-offs
 
 - Rollout assignment uses deterministic hashing rather than random evaluation.
+- Targeting rules are evaluated before percentage rollout so explicit business rules can override general rollout behavior.
+- Configuration mutations and their corresponding audit writes share a transaction so partial state is not persisted when audit persistence fails.
 - Integration tests use PostgreSQL through Testcontainers instead of H2.
 - SQL remains explicit in repositories rather than introducing an ORM at this stage.
 - Spring owns database connections through `DataSource`.
@@ -394,6 +412,10 @@ Audit history is intended for configuration traceability; it is not a complete s
 
 ## Known limitations
 
+FlagTether is a portfolio-scale implementation focused on feature-management fundamentals rather than a hosted multi-tenant service.
+
+Current limitations include:
+
 - no authentication or role-based access control;
 - no hosted public demo yet;
 - no browser-level E2E suite yet;
@@ -403,6 +425,15 @@ Audit history is intended for configuration traceability; it is not a complete s
 - targeting attributes are limited to a small fixed set;
 - audit records do not contain authenticated actor identities;
 - the included Compose stack does not provide TLS, managed secrets, backups, or production observability.
+
+## Possible next steps
+
+- authentication and role-based access control;
+- Playwright browser-level end-to-end coverage;
+- SDK-based local feature evaluation;
+- caching for high-volume evaluation paths;
+- real-time flag change propagation;
+- production observability and managed secret handling.
 
 ## Contributing and security
 
