@@ -1,4 +1,4 @@
-# ReleasePilot Architecture
+# FlagTether Architecture
 
 This document records the current backend structure and the reasoning behind several implementation choices.
 
@@ -82,7 +82,7 @@ Using a random value on every evaluation would make percentage rollout unstable.
 
 A user could receive a feature on one request and lose it on the next request without any configuration change.
 
-ReleasePilot instead hashes:
+FlagTether instead hashes:
 
 ```text
 environment:flagName:userKey
@@ -218,9 +218,9 @@ This rule is also enforced by PostgreSQL.
 
 Application runtime access and schema migration responsibilities are separate in the local non-Docker setup.
 
-`releasepilot_app` performs application reads and writes.
+`flagtether_app` performs application reads and writes.
 
-`releasepilot_migrator` owns schema migration responsibilities.
+`flagtether_migrator` owns schema migration responsibilities.
 
 Flyway records applied migrations in `flyway_schema_history`.
 
@@ -261,7 +261,7 @@ The intent is to keep repetitive HTTP error mapping out of individual controller
 
 The architecture currently assumes:
 
-- one ReleasePilot installation;
+- one FlagTether installation;
 - no tenant model;
 - PostgreSQL as the persistence engine;
 - server-side evaluation through the REST API;

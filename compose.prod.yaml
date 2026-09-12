@@ -3,18 +3,18 @@ services:
     image: postgres:18-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_DB: releasepilot
-      POSTGRES_USER: releasepilot_app
+      POSTGRES_DB: flagtether
+      POSTGRES_USER: flagtether_app
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
-      - releasepilot_postgres_data:/var/lib/postgresql
+      - flagtether_postgres_data:/var/lib/postgresql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U releasepilot_app -d releasepilot"]
+      test: ["CMD-SHELL", "pg_isready -U flagtether_app -d flagtether"]
       interval: 5s
       timeout: 5s
       retries: 10
 
-  releasepilot:
+  flagtether:
     build:
       context: .
     restart: unless-stopped
@@ -22,25 +22,25 @@ services:
       postgres:
         condition: service_healthy
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/releasepilot
-      SPRING_DATASOURCE_USERNAME: releasepilot_app
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/flagtether
+      SPRING_DATASOURCE_USERNAME: flagtether_app
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
-      SPRING_FLYWAY_URL: jdbc:postgresql://postgres:5432/releasepilot
-      SPRING_FLYWAY_USER: releasepilot_app
+      SPRING_FLYWAY_URL: jdbc:postgresql://postgres:5432/flagtether
+      SPRING_FLYWAY_USER: flagtether_app
       SPRING_FLYWAY_PASSWORD: ${POSTGRES_PASSWORD}
       SPRING_FLYWAY_BASELINE_ON_MIGRATE: "false"
 
-  flagtether:
+  frontend:
     build:
       context: ./frontend
       args:
         VITE_API_BASE_URL: ""
     restart: unless-stopped
     depends_on:
-      releasepilot:
+      flagtether:
         condition: service_started
     ports:
       - "3000:80"
 
 volumes:
-  releasepilot_postgres_data:
+  flagtether_postgres_data:

@@ -92,9 +92,9 @@ ON targeting_rules(
 
 GRANT SELECT, INSERT, UPDATE, DELETE
 ON feature_flags, targeting_rules
-TO releasepilot_app;
+TO flagtether_app;
 
 
 GRANT SELECT, INSERT
 ON audit_log
-TO releasepilot_app;
+TO flagtether_app;

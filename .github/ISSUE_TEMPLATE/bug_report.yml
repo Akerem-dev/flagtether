@@ -1,5 +1,5 @@
 name: Bug report
-description: Report reproducible incorrect behavior in ReleasePilot
+description: Report reproducible incorrect behavior in FlagTether
 title: "[Bug] "
 labels:
   - bug
@@ -25,7 +25,7 @@ body:
     attributes:
       label: Reproduction steps
       placeholder: |
-        1. Start ReleasePilot
+        1. Start FlagTether
         2. Send request
         3. Observe the result
     validations:

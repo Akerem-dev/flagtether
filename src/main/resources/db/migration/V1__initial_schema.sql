@@ -130,16 +130,16 @@ ON audit_log(
 
 GRANT SELECT, INSERT, UPDATE, DELETE
 ON feature_flags, targeting_rules
-TO releasepilot_app;
+TO flagtether_app;
 
 
 GRANT SELECT, INSERT
 ON audit_log
-TO releasepilot_app;
+TO flagtether_app;
 
 
 GRANT USAGE, SELECT
 ON feature_flags_id_seq,
    targeting_rules_id_seq,
    audit_log_id_seq
-TO releasepilot_app;
+TO flagtether_app;

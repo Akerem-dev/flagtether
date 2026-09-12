@@ -22,7 +22,7 @@ Local secrets belong in `.env` or operating-system environment variables.
 
 ## Current security boundaries
 
-ReleasePilot does not currently implement authentication or authorization.
+FlagTether does not currently implement authentication or authorization.
 
 It should therefore not be exposed directly to an untrusted public network in its current form.
 
